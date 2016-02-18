@@ -8,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <QTextStream>
+#include <QTimer>
 
 #define PI 3.14159265
 
@@ -20,6 +21,12 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent) {
     width = baseWidth;
     height = baseHeight;
     srand(time(NULL));
+    vec2 center(320, 240);
+    state = engine.createInitialState();
+    QTimer *aTimer = new QTimer(this);
+    connect(aTimer,SIGNAL(timeout()), this,SLOT(update()));
+    aTimer->start(10);
+    last = chrono::system_clock::now();
 }
 
 GLWidget::~GLWidget() {
@@ -28,8 +35,11 @@ GLWidget::~GLWidget() {
 void GLWidget::keyPressEvent(QKeyEvent *event) {
     switch(event->key()) {
         case Qt::Key_S:
+            delete state;
+            state = engine.createInitialState();
             break;
     }
+    update();
 }
 
 void GLWidget::initializeGL() {
@@ -51,11 +61,6 @@ void GLWidget::initializeGL() {
     glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
     glBufferData(GL_ARRAY_BUFFER, 0, NULL, GL_DYNAMIC_DRAW);
 
-    glGenBuffers(1, &colorBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
-    glBufferData(GL_ARRAY_BUFFER, 0, NULL, GL_DYNAMIC_DRAW);
-
-
     // Load our vertex and fragment shaders into a program object
     // on the GPU
     program = loadShaders(":/vert.glsl", ":/frag.glsl");
@@ -68,11 +73,6 @@ void GLWidget::initializeGL() {
     GLint positionIndex = glGetAttribLocation(program, "position");
     glEnableVertexAttribArray(positionIndex);
     glVertexAttribPointer(positionIndex, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
-    GLint colorIndex = glGetAttribLocation(program, "color_in");
-    glEnableVertexAttribArray(colorIndex);
-    glVertexAttribPointer(colorIndex, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     glUseProgram(program);
     projectionLoc = glGetUniformLocation(program, "projection");
@@ -102,6 +102,36 @@ void GLWidget::resizeGL(int w, int h) {
 
 void GLWidget::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT);
+    updatePositions();
+    int start = 0;
+    for(unsigned int k = 0; k < state->asteroids->size(); k++)
+    {
+        glDrawArrays(GL_LINE_LOOP, start, state->asteroids->at(k).points->size());
+        start += state->asteroids->at(k).points->size();
+    }
+}
+
+void GLWidget::updatePositions()
+{
+    current = chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = current - last;
+    double elapsed = elapsed_seconds.count();
+    last = current;
+    engine.getNextState(state, elapsed);
+    points = 0;
+    vector<vec2> asteroids;
+    for(unsigned int k = 0; k < state->asteroids->size(); k++)
+    {
+        Asteroid *asteroid = &(state->asteroids->at(k));
+        for(unsigned int a = 0; a < asteroid->points->size(); a++)
+        {
+            asteroids.push_back(*(new vec2(asteroid->points->at(a).x + asteroid->position->x, asteroid->points->at(a).y + asteroid->position->y)));
+            points++;
+        }
+    }
+    glUseProgram(program);
+    glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * asteroids.size(), asteroids.data(), GL_DYNAMIC_DRAW);
 }
 
 // Copied from LoadShaders.cpp in the the oglpg-8th-edition.zip

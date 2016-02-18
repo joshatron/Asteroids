@@ -1,0 +1,33 @@
+#ifndef GAMEENGINE_H
+#define GAMEENGINE_H
+
+#include <glm/glm.hpp>
+#include "gamestate.h"
+#include "bullet.h"
+#include "asteroid.h"
+
+using glm::vec2;
+using std::vector;
+
+class GameEngine
+{
+    public:
+        GameEngine();
+        GameState * createInitialState();
+        void getNextState(GameState *previous, double timePassed);
+        Asteroid * createAsteroid(vec2 *center, double radius, double velocity);
+    private:
+        vector<Asteroid> * createAsteroids(int number, vec2 *shipLoc);
+        void updateLocation(vec2 *original, vec2 *velocity, double time);
+
+        double friction;
+        double thrust;
+        double bulletSpeed;
+        double asteroidSpeed;
+        double baseAsteroidRadius;
+        int maxBullets;
+        int width;
+        int height;
+
+};
+#endif

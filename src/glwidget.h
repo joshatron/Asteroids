@@ -5,8 +5,12 @@
 #include <QOpenGLFunctions_3_3_Core>
 #include <QMouseEvent>
 #include <glm/glm.hpp>
-#include "shape.h"
 #include <QtGui/QImage>
+#include "gameengine.h"
+#include "gamestate.h"
+#include "bullet.h"
+#include "asteroid.h"
+#include <chrono>
 
 // glm by default uses degrees, but that functionality
 // is deprecated so GLM_FORCE_RADIANS turns off some 
@@ -33,12 +37,12 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     private:
         GLuint loadShaders(const char* vertf, const char* fragf);
         static const GLchar* readShader(const char* filename);
+        void updatePositions();
 
         GLuint vao;
         GLuint program;
 
         GLuint positionBuffer;
-        GLuint colorBuffer;
 
         GLuint projectionBuffer;
         GLint projectionLoc;
@@ -53,6 +57,12 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
         //the width and height of the window
         int width;
         int height;
+
+        GameEngine engine;
+        GameState *state;
+        int points;
+
+        std::chrono::time_point<std::chrono::system_clock> last, current;
 };
 
 #endif
