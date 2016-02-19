@@ -33,11 +33,21 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
         void paintGL();
 
         void keyPressEvent(QKeyEvent *event);
+        void keyReleaseEvent(QKeyEvent *event);
 
     private:
         GLuint loadShaders(const char* vertf, const char* fragf);
         static const GLchar* readShader(const char* filename);
         void updatePositions();
+        void initializeShip();
+        void renderShip();
+
+        GLuint shipProg;
+        GLuint shipVao;
+        GLint shipProjMatrixLoc;
+        GLint shipTransMatrixLoc;
+
+        glm::mat4 shipTranslationMatrix;
 
         GLuint vao;
         GLuint program;

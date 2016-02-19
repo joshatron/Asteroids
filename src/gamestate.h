@@ -19,7 +19,8 @@ class GameState
         vector<Bullet> *bullets;
         vector<Asteroid> *asteroids;
         double pauseTime;
-        double timeLastFired;
+        double lastFiredCooldown;
+        double teleportCooldown;
 
         bool turningLeft;
         bool turningRight;

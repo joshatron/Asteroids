@@ -19,12 +19,17 @@ class GameEngine
     private:
         vector<Asteroid> * createAsteroids(int number, vec2 *shipLoc);
         void updateLocation(vec2 *original, vec2 *velocity, double time);
+        void updateVelocity(vec2 *velocity, double angle, double add);
 
         double friction;
         double thrust;
+        double turnRate;
         double bulletSpeed;
         double asteroidSpeed;
         double baseAsteroidRadius;
+        double bulletAge;
+        double fireRate;
+        double teleportCooldown;
         int maxBullets;
         int width;
         int height;

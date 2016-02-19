@@ -13,6 +13,7 @@
 #define PI 3.14159265
 
 using namespace std;
+using glm::mat4;
 
 
 GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent) {
@@ -32,21 +33,60 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent) {
 GLWidget::~GLWidget() {
 }
 
-void GLWidget::keyPressEvent(QKeyEvent *event) {
-    switch(event->key()) {
-        case Qt::Key_S:
-            delete state;
-            state = engine.createInitialState();
+void GLWidget::keyPressEvent(QKeyEvent *event)
+{
+    switch(event->key())
+    {
+        case Qt::Key_D:
+            state->turningLeft = true;
+            state->turningRight = false;
+            break;
+        case Qt::Key_F:
+            state->turningLeft = false;
+            state->turningRight = true;
+            break;
+        case Qt::Key_J:
+            state->firing = true;
+            break;
+        case Qt::Key_K:
+            state->thrusting = true;
+            break;
+        case Qt::Key_L:
+            state->teleporting = true;
             break;
     }
     update();
+}
+
+void GLWidget::keyReleaseEvent(QKeyEvent *event)
+{
+    switch(event->key())
+    {
+        case Qt::Key_D:
+            state->turningLeft = false;
+            state->turningRight = false;
+            break;
+        case Qt::Key_F:
+            state->turningLeft = false;
+            state->turningRight = false;
+            break;
+        case Qt::Key_J:
+            state->firing = false;
+            break;
+        case Qt::Key_K:
+            state->thrusting = false;
+            break;
+        case Qt::Key_L:
+            state->teleporting = false;
+            break;
+    }
 }
 
 void GLWidget::initializeGL() {
     initializeOpenGLFunctions();
 
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glPointSize(4.0f);
+    glPointSize(2.0f);
 
     // Create a new Vertex Array Object on the GPU which
     // saves the attribute layout of our vertices.
@@ -69,13 +109,45 @@ void GLWidget::initializeGL() {
     // to the currently bound buffer object, which contains our
     // position data for a single triangle. This information 
     // is stored in our vertex array object.
+    glUseProgram(program);
     glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
     GLint positionIndex = glGetAttribLocation(program, "position");
     glEnableVertexAttribArray(positionIndex);
     glVertexAttribPointer(positionIndex, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
-    glUseProgram(program);
     projectionLoc = glGetUniformLocation(program, "projection");
+
+    initializeShip();
+}
+
+void GLWidget::initializeShip()
+{
+    glGenVertexArrays(1, &shipVao);
+    glBindVertexArray(shipVao);
+
+    GLuint shipPositionBuffer;
+    glGenBuffers(1, &shipPositionBuffer);
+
+    vec2 pts[5];
+    pts[0] = vec2(0, -15);
+    pts[1] = vec2(8, 15);
+    pts[2] = vec2(4, 10);
+    pts[3] = vec2(-4, 10);
+    pts[4] = vec2(-8, 15);
+
+    glBindBuffer(GL_ARRAY_BUFFER, shipPositionBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(pts), pts, GL_STATIC_DRAW);
+
+    shipProg = loadShaders(":/ship_vert.glsl", ":/frag.glsl");
+    glUseProgram(shipProg);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, shipPositionBuffer);
+    GLint positionIndex = glGetAttribLocation(shipProg, "position");
+    glEnableVertexAttribArray(positionIndex);
+    glVertexAttribPointer(positionIndex, 2, GL_FLOAT, GL_FALSE, 0, 0); 
+
+    shipProjMatrixLoc = glGetUniformLocation(shipProg, "projection");
+    shipTransMatrixLoc = glGetUniformLocation(shipProg, "translation");
 }
 
 void GLWidget::resizeGL(int w, int h) {
@@ -98,17 +170,25 @@ void GLWidget::resizeGL(int w, int h) {
 
     glUseProgram(program);
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);
+    glUseProgram(shipProg);
+    glUniformMatrix4fv(shipProjMatrixLoc, 1, GL_FALSE, &projection[0][0]);
 }
 
 void GLWidget::paintGL() {
     glClear(GL_COLOR_BUFFER_BIT);
+
     updatePositions();
+    glUseProgram(program);
+    glBindVertexArray(vao);
     int start = 0;
     for(unsigned int k = 0; k < state->asteroids->size(); k++)
     {
         glDrawArrays(GL_LINE_LOOP, start, state->asteroids->at(k).points->size());
         start += state->asteroids->at(k).points->size();
     }
+    glDrawArrays(GL_POINTS, start, state->bullets->size());
+
+    renderShip();
 }
 
 void GLWidget::updatePositions()
@@ -119,19 +199,34 @@ void GLWidget::updatePositions()
     last = current;
     engine.getNextState(state, elapsed);
     points = 0;
-    vector<vec2> asteroids;
+    vector<vec2> nonShip;
     for(unsigned int k = 0; k < state->asteroids->size(); k++)
     {
         Asteroid *asteroid = &(state->asteroids->at(k));
         for(unsigned int a = 0; a < asteroid->points->size(); a++)
         {
-            asteroids.push_back(*(new vec2(asteroid->points->at(a).x + asteroid->position->x, asteroid->points->at(a).y + asteroid->position->y)));
+            nonShip.push_back(*(new vec2(asteroid->points->at(a).x + asteroid->position->x, asteroid->points->at(a).y + asteroid->position->y)));
             points++;
         }
     }
+    for(unsigned int k = 0; k < state->bullets->size(); k++)
+    {
+        nonShip.push_back(*(new vec2(state->bullets->at(k).position->x, state->bullets->at(k).position->y)));
+    }
     glUseProgram(program);
     glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * asteroids.size(), asteroids.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * nonShip.size(), nonShip.data(), GL_DYNAMIC_DRAW);
+}
+
+void GLWidget::renderShip()
+{
+    mat4 translate = glm::translate(mat4(1.0), vec3(state->shipLoc->x, state->shipLoc->y, 0));
+    mat4 rotate = glm::rotate(mat4(1.0), (float)(state->shipAngle * PI / 180), vec3(0, 0, 1));
+    shipTranslationMatrix = translate * rotate;
+    glUseProgram(shipProg);
+    glUniformMatrix4fv(shipTransMatrixLoc, 1, GL_FALSE, &shipTranslationMatrix[0][0]);
+    glBindVertexArray(shipVao);
+    glDrawArrays(GL_LINE_LOOP, 0, 5);
 }
 
 // Copied from LoadShaders.cpp in the the oglpg-8th-edition.zip
