@@ -11,8 +11,8 @@ using std::endl;
 GameEngine::GameEngine()
 {
     friction = 40;
-    thrust = 200;
-    turnRate = 200;
+    thrust = 300;
+    turnRate = 300;
     bulletSpeed = 250;
     asteroidSpeed = 50;
     baseAsteroidRadius = 30;
@@ -21,8 +21,8 @@ GameEngine::GameEngine()
     teleportCooldown = .5;
     maxBullets = 4;
     baseAsteroids = 6;
-    width = 1000;
-    height = 562;
+    width = 1600;
+    height = 900;
     srand(time(NULL));
 }
 
@@ -328,7 +328,7 @@ Asteroid * GameEngine::createAsteroid(vec2 *center, double radius, double veloci
         double tempRadius = radius;
         if(abs(rand()) % sides < 2 && last + 2 != k && last + 3 != k)
         {
-            tempRadius = ((25 + abs(rand()) % 75) / 100.) * radius;
+            tempRadius = ((50 + abs(rand()) % 50) / 100.) * radius;
             last = k;
         }
         vec2 *tempPoint = new vec2(tempRadius * cos(angle), tempRadius * sin(angle));

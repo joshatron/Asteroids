@@ -72,7 +72,7 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
         GameState *state;
         int points;
 
-        std::chrono::time_point<std::chrono::system_clock> last, current;
+        std::chrono::time_point<std::chrono::system_clock> first, last, current;
 };
 
 #endif

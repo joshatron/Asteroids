@@ -17,8 +17,8 @@ using glm::mat4;
 
 
 GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent) {
-    baseWidth = 1000;
-    baseHeight = 562;
+    baseWidth = 1600;
+    baseHeight = 900;
     width = baseWidth;
     height = baseHeight;
     srand(time(NULL));
@@ -27,6 +27,7 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent) {
     QTimer *aTimer = new QTimer(this);
     connect(aTimer,SIGNAL(timeout()), this,SLOT(update()));
     aTimer->start(10);
+    first = chrono::system_clock::now();
     last = chrono::system_clock::now();
 }
 
@@ -128,12 +129,15 @@ void GLWidget::initializeShip()
     GLuint shipPositionBuffer;
     glGenBuffers(1, &shipPositionBuffer);
 
-    vec2 pts[5];
+    vec2 pts[8];
     pts[0] = vec2(0, -15);
     pts[1] = vec2(8, 15);
     pts[2] = vec2(4, 10);
     pts[3] = vec2(-4, 10);
     pts[4] = vec2(-8, 15);
+    pts[5] = vec2(4, 10);
+    pts[6] = vec2(0, 20);
+    pts[7] = vec2(-4, 10);
 
     glBindBuffer(GL_ARRAY_BUFFER, shipPositionBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(pts), pts, GL_STATIC_DRAW);
@@ -227,6 +231,11 @@ void GLWidget::renderShip()
     glUniformMatrix4fv(shipTransMatrixLoc, 1, GL_FALSE, &shipTranslationMatrix[0][0]);
     glBindVertexArray(shipVao);
     glDrawArrays(GL_LINE_LOOP, 0, 5);
+    std::chrono::duration<double> elapsed_seconds = current - first;
+    if(state->thrusting && (int)(elapsed_seconds.count() * 100) % 16 < 8)
+    {
+        glDrawArrays(GL_LINE_STRIP, 5, 3);
+    }
 }
 
 // Copied from LoadShaders.cpp in the the oglpg-8th-edition.zip
