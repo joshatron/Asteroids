@@ -31,6 +31,7 @@ class GameEngine
         double fireRate;
         double teleportCooldown;
         int maxBullets;
+        int baseAsteroids;
         int width;
         int height;
 

@@ -17,8 +17,8 @@ using glm::mat4;
 
 
 GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent) {
-    baseWidth = 640;
-    baseHeight = 480;
+    baseWidth = 1000;
+    baseHeight = 562;
     width = baseWidth;
     height = baseHeight;
     srand(time(NULL));

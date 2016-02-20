@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
 
     GLWidget glWidget;
     qreal pixelRatio = glWidget.devicePixelRatio();
-    glWidget.resize(640/pixelRatio,480/pixelRatio);
+    glWidget.resize(1000/pixelRatio,562/pixelRatio);
     glWidget.show();
 
     return a.exec();
