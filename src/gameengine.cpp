@@ -16,7 +16,7 @@ GameEngine::GameEngine()
     bulletSpeed = 250;
     asteroidSpeed = 50;
     baseAsteroidRadius = 30;
-    bulletAge = 2;
+    bulletAge = 3;
     fireRate = .15;
     teleportCooldown = .5;
     maxBullets = 4;
