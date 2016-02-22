@@ -11,14 +11,14 @@ using std::vector;
 class GameState
 {
     public:
-        vec2 *shipLoc;
-        vec2 *shipVelocity;
+        vec2 shipLoc;
+        vec2 shipVelocity;
         double shipAngle;
         int livesLeft;
         int score;
         int numAsteroids;
-        vector<Bullet> *bullets;
-        vector<Asteroid> *asteroids;
+        vector<Bullet> bullets;
+        vector<Asteroid> asteroids;
         double pauseTime;
         double lastFiredCooldown;
         double teleportCooldown;

@@ -9,9 +9,9 @@ using std::vector;
 class Asteroid
 {
     public:
-        vec2 *position;
-        vec2 *velocity;
+        vec2 position;
+        vec2 velocity;
         double radius;
-        vector<vec2> *points;
+        vector<vec2> points;
 };
 #endif

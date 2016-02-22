@@ -7,8 +7,8 @@ using glm::vec2;
 class Bullet
 {
     public:
-        vec2 *position;
-        vec2 *velocity;
+        vec2 position;
+        vec2 velocity;
         double age;
 };
 #endif
