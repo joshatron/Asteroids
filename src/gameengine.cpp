@@ -20,7 +20,7 @@ GameEngine::GameEngine()
     fireRate = .15;
     teleportCooldown = .5;
     maxBullets = 4;
-    baseAsteroids = 6;
+    baseAsteroids = 4;
     width = 1600;
     height = 900;
     srand(time(NULL));
@@ -34,10 +34,11 @@ GameState * GameEngine::createInitialState()
     state->shipVelocity = new vec2(0, 0);
     state->shipAngle = 0.;
     state->livesLeft = 3;
+    state->numAsteroids = baseAsteroids;
     cout << state->livesLeft << endl;
     state->score = 0;
     state->bullets = new vector<Bullet>();
-    state->asteroids = createAsteroids(baseAsteroids, state->shipLoc);
+    state->asteroids = createAsteroids(state->numAsteroids, state->shipLoc);
     state->pauseTime = 3.;
     state->lastFiredCooldown = -1.;
     state->teleportCooldown = -1.;
@@ -91,7 +92,8 @@ void GameEngine::getNextState(GameState *previous, double timePassed)
     if(previous->asteroids->size() == 0)
     {
         delete previous->asteroids;
-        previous->asteroids = createAsteroids(baseAsteroids, previous->shipLoc);
+        previous->numAsteroids += 2;
+        previous->asteroids = createAsteroids(previous->numAsteroids, previous->shipLoc);
     }
     vector<Asteroid> *asteroids = previous->asteroids;
 

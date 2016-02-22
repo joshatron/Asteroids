@@ -16,6 +16,7 @@ class GameState
         double shipAngle;
         int livesLeft;
         int score;
+        int numAsteroids;
         vector<Bullet> *bullets;
         vector<Asteroid> *asteroids;
         double pauseTime;
