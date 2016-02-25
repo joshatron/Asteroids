@@ -206,9 +206,11 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
         //firing
         if(state.ships.at(k).firing && state.ships.at(k).bulletCooldowns.size() < maxBullets && state.ships.at(k).fireCooldown <= 0)
         {
+            double dist = sqrt(pow(state.ships.at(k).bulletFirePoint.x, 2) + pow(state.ships.at(k).bulletFirePoint.y, 2));
+            double angle = atan(state.ships.at(k).bulletFirePoint.y / state.ships.at(k).bulletFirePoint.x);
             Bullet bullet;
-            bullet.position.x = state.ships.at(k).position.x + (state.ships.at(k).bulletFirePoint.x * cos(state.ships.at(k).angle));
-            bullet.position.y = state.ships.at(k).position.y + (state.ships.at(k).bulletFirePoint.y * sin(state.ships.at(k).angle));
+            bullet.position.x = state.ships.at(k).position.x + (dist * cos((state.ships.at(k).angle) * PI / 180 + angle));
+            bullet.position.y = state.ships.at(k).position.y + (dist * sin((state.ships.at(k).angle) * PI / 180 + angle));
             bullet.velocity.x = cos((state.ships.at(k).angle - 90) * PI / 180) * bulletSpeed + state.ships.at(k).velocity.x;
             bullet.velocity.y = cos((state.ships.at(k).angle - 90) * PI / 180) * bulletSpeed + state.ships.at(k).velocity.y;
             state.bullets.push_back(bullet);
