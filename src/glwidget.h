@@ -10,6 +10,7 @@
 #include "gamestate.h"
 #include "bullet.h"
 #include "asteroid.h"
+#include "ship.h"
 #include <chrono>
 
 // glm by default uses degrees, but that functionality
@@ -69,7 +70,7 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
         int height;
 
         GameEngine engine;
-        GameState *state;
+        GameState state;
         int points;
 
         std::chrono::time_point<std::chrono::system_clock> first, last, current;

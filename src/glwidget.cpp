@@ -23,7 +23,7 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent) {
     height = baseHeight;
     srand(time(NULL));
     vec2 center(320, 240);
-    state = engine.createInitialState();
+    engine.createInitialState(state);
     QTimer *aTimer = new QTimer(this);
     connect(aTimer,SIGNAL(timeout()), this,SLOT(update()));
     aTimer->start(10);
@@ -39,21 +39,21 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
     switch(event->key())
     {
         case Qt::Key_D:
-            state->turningLeft = true;
-            state->turningRight = false;
+            state.ships.at(0).turningLeft = true;
+            state.ships.at(0).turningRight = false;
             break;
         case Qt::Key_F:
-            state->turningLeft = false;
-            state->turningRight = true;
+            state.ships.at(0).turningRight = true;
+            state.ships.at(0).turningLeft = false;
             break;
         case Qt::Key_J:
-            state->firing = true;
+            state.ships.at(0).firing = true;
             break;
         case Qt::Key_K:
-            state->thrusting = true;
+            state.ships.at(0).thrusting = true;
             break;
         case Qt::Key_L:
-            state->teleporting = true;
+            state.ships.at(0).teleporting = true;
             break;
     }
     update();
@@ -64,21 +64,19 @@ void GLWidget::keyReleaseEvent(QKeyEvent *event)
     switch(event->key())
     {
         case Qt::Key_D:
-            state->turningLeft = false;
-            state->turningRight = false;
+            state.ships.at(0).turningLeft = false;
             break;
         case Qt::Key_F:
-            state->turningLeft = false;
-            state->turningRight = false;
+            state.ships.at(0).turningRight = false;
             break;
         case Qt::Key_J:
-            state->firing = false;
+            state.ships.at(0).firing = false;
             break;
         case Qt::Key_K:
-            state->thrusting = false;
+            state.ships.at(0).thrusting = false;
             break;
         case Qt::Key_L:
-            state->teleporting = false;
+            state.ships.at(0).teleporting = false;
             break;
     }
 }
@@ -129,18 +127,8 @@ void GLWidget::initializeShip()
     GLuint shipPositionBuffer;
     glGenBuffers(1, &shipPositionBuffer);
 
-    vec2 pts[8];
-    pts[0] = vec2(0, -15);
-    pts[1] = vec2(8, 15);
-    pts[2] = vec2(4, 10);
-    pts[3] = vec2(-4, 10);
-    pts[4] = vec2(-8, 15);
-    pts[5] = vec2(4, 10);
-    pts[6] = vec2(0, 20);
-    pts[7] = vec2(-4, 10);
-
     glBindBuffer(GL_ARRAY_BUFFER, shipPositionBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(pts), pts, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * state.ships.at(0).shipPoints.size(), state.ships.at(0).shipPoints.data(), GL_STATIC_DRAW);
 
     shipProg = loadShaders(":/ship_vert.glsl", ":/frag.glsl");
     glUseProgram(shipProg);
@@ -185,12 +173,12 @@ void GLWidget::paintGL() {
     glUseProgram(program);
     glBindVertexArray(vao);
     int start = 0;
-    for(unsigned int k = 0; k < state->asteroids->size(); k++)
+    for(unsigned int k = 0; k < state.asteroids.size(); k++)
     {
-        glDrawArrays(GL_LINE_LOOP, start, state->asteroids->at(k).points->size());
-        start += state->asteroids->at(k).points->size();
+        glDrawArrays(GL_LINE_LOOP, start, state.asteroids.at(k).points.size());
+        start += state.asteroids.at(k).points.size();
     }
-    glDrawArrays(GL_POINTS, start, state->bullets->size());
+    glDrawArrays(GL_POINTS, start, state.bullets.size());
 
     renderShip();
 }
@@ -204,19 +192,20 @@ void GLWidget::updatePositions()
     engine.getNextState(state, elapsed);
     points = 0;
     vector<vec2> nonShip;
-    for(unsigned int k = 0; k < state->asteroids->size(); k++)
+    for(unsigned int k = 0; k < state.asteroids.size(); k++)
     {
-        Asteroid *asteroid = &(state->asteroids->at(k));
-        for(unsigned int a = 0; a < asteroid->points->size(); a++)
+        for(unsigned int a = 0; a < state.asteroids.at(k).points.size(); a++)
         {
-            nonShip.push_back(*(new vec2(asteroid->points->at(a).x + asteroid->position->x, asteroid->points->at(a).y + asteroid->position->y)));
+            nonShip.push_back(state.asteroids.at(k).points.at(a) + state.asteroids.at(k).position);
             points++;
         }
     }
-    for(unsigned int k = 0; k < state->bullets->size(); k++)
+
+    for(unsigned int k = 0; k < state.bullets.size(); k++)
     {
-        nonShip.push_back(*(new vec2(state->bullets->at(k).position->x, state->bullets->at(k).position->y)));
+        nonShip.push_back(state.bullets.at(k).position);
     }
+
     glUseProgram(program);
     glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * nonShip.size(), nonShip.data(), GL_DYNAMIC_DRAW);
@@ -224,17 +213,17 @@ void GLWidget::updatePositions()
 
 void GLWidget::renderShip()
 {
-    mat4 translate = glm::translate(mat4(1.0), vec3(state->shipLoc->x, state->shipLoc->y, 0));
-    mat4 rotate = glm::rotate(mat4(1.0), (float)(state->shipAngle * PI / 180), vec3(0, 0, 1));
+    mat4 translate = glm::translate(mat4(1.0), vec3(state.ships.at(0).position, 0));
+    mat4 rotate = glm::rotate(mat4(1.0), (float)(state.ships.at(0).angle * PI / 180), vec3(0, 0, 1));
     shipTranslationMatrix = translate * rotate;
     glUseProgram(shipProg);
     glUniformMatrix4fv(shipTransMatrixLoc, 1, GL_FALSE, &shipTranslationMatrix[0][0]);
     glBindVertexArray(shipVao);
-    glDrawArrays(GL_LINE_LOOP, 0, 5);
+    glDrawArrays(GL_LINES, 0, state.ships.at(0).shipPoints.size());
     std::chrono::duration<double> elapsed_seconds = current - first;
-    if(state->thrusting && (int)(elapsed_seconds.count() * 100) % 16 < 8)
+    if(state.ships.at(0).thrusting && (int)(elapsed_seconds.count() * 100) % 16 < 8)
     {
-        glDrawArrays(GL_LINE_STRIP, 5, 3);
+        glDrawArrays(GL_LINES, state.ships.at(0).shipPoints.size(), state.ships.at(0).shipFirePoints.size());
     }
 }
 

@@ -1,5 +1,5 @@
-#ifndef BULLET_H
-#define BULLET_H
+#ifndef SHIP_H
+#define SHIP_H
 #include <glm/glm.hpp>
 
 using glm::vec2;
@@ -20,9 +20,10 @@ class Ship
         bool turningLeft;
         bool turningRight;
         bool thrusting;
-        bool teleporting;
         bool firing;
-        bool fired;
+        bool teleporting;
+
+        vector<double> bulletCooldowns;
 
         //put in individual lines, not a line loop or strip
         vector<vec2> shipPoints;

@@ -4,6 +4,7 @@
 #include <vector>
 #include "bullet.h"
 #include "asteroid.h"
+#include "ship.h"
 
 using glm::vec2;
 using std::vector;

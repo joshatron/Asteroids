@@ -5,6 +5,7 @@
 #include "gamestate.h"
 #include "bullet.h"
 #include "asteroid.h"
+#include "ship.h"
 
 using glm::vec2;
 using std::vector;
@@ -20,6 +21,8 @@ class GameEngine
         void createAsteroid(GameState& state, vec2 center, double radius, double velocity);
         void updateObjects(GameState& state, double timePassed);
         void detectCollisions(GameState& state);
+        void updateLocation(vec2& original, vec2& velocity, double time);
+        void updateVelocity(vec2& velocity, double angle, double add);
 
         double friction;
         double thrust;
