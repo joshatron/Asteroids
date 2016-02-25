@@ -11,22 +11,10 @@ using std::vector;
 class GameState
 {
     public:
-        vec2 shipLoc;
-        vec2 shipVelocity;
-        double shipAngle;
-        int livesLeft;
-        int score;
-        int numAsteroids;
+        vector<Ship> ships;
         vector<Bullet> bullets;
         vector<Asteroid> asteroids;
+        int nextNumAsteroids;
         double pauseTime;
-        double lastFiredCooldown;
-        double teleportCooldown;
-
-        bool turningLeft;
-        bool turningRight;
-        bool thrusting;
-        bool firing;
-        bool teleporting;
 };
 #endif

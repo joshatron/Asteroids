@@ -13,13 +13,13 @@ class GameEngine
 {
     public:
         GameEngine();
-        GameState * createInitialState();
-        void getNextState(GameState *previous, double timePassed);
-        Asteroid * createAsteroid(vec2 *center, double radius, double velocity);
+        void createInitialState(GameState& state);
+        void getNextState(GameState& state, double timePassed);
     private:
-        vector<Asteroid> * createAsteroids(int number, vec2 *shipLoc);
-        void updateLocation(vec2 *original, vec2 *velocity, double time);
-        void updateVelocity(vec2 *velocity, double angle, double add);
+        void createAsteroids(GameState& state, int number);
+        void createAsteroid(GameState& state, vec2 center, double radius, double velocity);
+        void updateObjects(GameState& state, double timePassed);
+        void detectCollisions(GameState& state);
 
         double friction;
         double thrust;

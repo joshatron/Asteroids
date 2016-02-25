@@ -10,6 +10,7 @@ using std::endl;
 
 GameEngine::GameEngine()
 {
+    //these are best values found
     friction = 40;
     thrust = 300;
     turnRate = 300;
@@ -26,32 +27,59 @@ GameEngine::GameEngine()
     srand(time(NULL));
 }
 
-GameState * GameEngine::createInitialState()
+void GameEngine::createInitialState(GameState& state)
 {
-    GameState *state = new GameState();
+    //initialize ship
+    Ship mainShip;
+    mainShip.position.x = width / 2;
+    mainShip.position.y = height / 2;
+    mainShip.velocity.x = 0;
+    mainShip.velocity.y = 0;
+    mainShip.angle = 0;
+    mainShip.fireCooldown = 0;
+    mainShip.teleportCooldown = 0;
+    mainShip.lives = 3;
+    mainShip.score = 0;
+    mainShip.turningLeft = false;
+    mainShip.turningRight = false;
+    mainShip.thrusting = false;
+    mainShip.teleporting = false;
+    mainShip.firing = false;
+    mainShip.fired = false;
+    mainShip.shipPoints.push_back(vec2(0, -15));
+    mainShip.shipPoints.push_back(vec2(8, 15));
+    mainShip.shipPoints.push_back(vec2(8, 15));
+    mainShip.shipPoints.push_back(vec2(4, 10));
+    mainShip.shipPoints.push_back(vec2(4, 10));
+    mainShip.shipPoints.push_back(vec2(-4, 10));
+    mainShip.shipPoints.push_back(vec2(-4, 10));
+    mainShip.shipPoints.push_back(vec2(-8, 15));
+    mainShip.shipPoints.push_back(vec2(-8, 15));
+    mainShip.shipPoints.push_back(vec2(0, -15));
+    mainShip.shipFirePoints.push_back(vec2(4, 10));
+    mainShip.shipFirePoints.push_back(vec2(0, 20));
+    mainShip.shipFirePoints.push_back(vec2(0, 20));
+    mainShip.shipFirePoints.push_back(vec2(-4, 10));
+    mainShip.bulletFirePoint.x = 0;
+    mainShip.bulletFirePoint.x = -15;
 
-    state->shipLoc = new vec2(width / 2, height / 2);
-    state->shipVelocity = new vec2(0, 0);
-    state->shipAngle = 0.;
-    state->livesLeft = 3;
-    state->numAsteroids = baseAsteroids;
-    cout << state->livesLeft << endl;
-    state->score = 0;
-    state->bullets = new vector<Bullet>();
-    state->asteroids = createAsteroids(state->numAsteroids, state->shipLoc);
-    state->pauseTime = 3.;
-    state->lastFiredCooldown = -1.;
-    state->teleportCooldown = -1.;
-    state->turningLeft = false;
-    state->turningRight = false;
-    state->thrusting = false;
-    state->firing = false;
-    state->teleporting = false;
+    state.ships.push_back(main_ship);
 
-    return state;
+    //initialize asteroids
+    state.numAsteroids = baseAsteroids;
+    createAsteroids(state, state.numAsteroids);
+
+    //wait to start game for 3 seconds
+    state.pauseTime = 3.;
 }
 
-void GameEngine::getNextState(GameState *previous, double timePassed)
+void GameEngine::getNextState(GameState& state, double timePassed)
+{
+    updateObjects(state, timePassed);
+    detectCollisions(state);
+}
+
+void GameEngine::updateObjects(GameState& state, double timePassed)
 {
     previous->lastFiredCooldown -= timePassed;
     previous->teleportCooldown -= timePassed;
@@ -114,6 +142,76 @@ void GameEngine::getNextState(GameState *previous, double timePassed)
         }
     }
 
+    //update based on controls
+    if(previous->turningLeft && !previous->turningRight)
+    {
+        previous->shipAngle -= turnRate * timePassed;
+        if(previous->shipAngle < 0)
+        {
+            previous->shipAngle += 360;
+        }
+    }
+    else if(previous->turningRight && !previous->turningLeft)
+    {
+        previous->shipAngle += turnRate * timePassed;
+        if(previous->shipAngle > 360)
+        {
+            previous->shipAngle -= 360;
+        }
+    }
+    if(previous->thrusting)
+    {
+        updateVelocity(previous->shipVelocity, previous->shipAngle, thrust * timePassed);
+    }
+    else
+    {
+        if(previous->shipVelocity->x >= 0)
+        {
+            previous->shipVelocity->x -= friction * timePassed;
+        }
+        else
+        {
+            previous->shipVelocity->x += friction * timePassed;
+        }
+        
+        if(previous->shipVelocity->y >= 0)
+        {
+            previous->shipVelocity->y -= friction * timePassed;
+        }
+        else
+        {
+            previous->shipVelocity->y += friction * timePassed;
+        }
+    }
+    if(previous->firing)
+    {
+        if(previous->lastFiredCooldown < 0 && previous->bullets->size() < maxBullets)
+        {
+            Bullet *bullet = new Bullet();
+            bullet->position = new vec2(previous->shipLoc->x + cos((previous->shipAngle - 90) * PI / 180) * 15,
+                                        previous->shipLoc->y + sin((previous->shipAngle - 90) * PI / 180) * 15);
+            bullet->velocity = new vec2(cos((previous->shipAngle - 90) * PI / 180) * bulletSpeed + previous->shipVelocity->x,
+                                        sin((previous->shipAngle - 90) * PI / 180) * bulletSpeed + previous->shipVelocity->y);
+            previous->lastFiredCooldown = fireRate;
+            previous->bullets->push_back(*bullet);
+        }
+    }
+    if(previous->teleporting)
+    {
+        if(previous->teleportCooldown < 0)
+        {
+            previous->shipLoc->x = rand() % width;
+            previous->shipLoc->y = rand() % height;
+            previous->shipVelocity->x = 0;
+            previous->shipVelocity->y = 0;
+            previous->teleportCooldown = teleportCooldown;
+        }
+    }
+
+}
+
+void GameEngine::detectCollisions(GameState& state)
+{
     //detect collisions
     for(unsigned int k = 0; k < bullets->size(); k++)
     {
@@ -196,72 +294,6 @@ void GameEngine::getNextState(GameState *previous, double timePassed)
             break;
         }
     }
-
-    //update based on controls
-    if(previous->turningLeft && !previous->turningRight)
-    {
-        previous->shipAngle -= turnRate * timePassed;
-        if(previous->shipAngle < 0)
-        {
-            previous->shipAngle += 360;
-        }
-    }
-    else if(previous->turningRight && !previous->turningLeft)
-    {
-        previous->shipAngle += turnRate * timePassed;
-        if(previous->shipAngle > 360)
-        {
-            previous->shipAngle -= 360;
-        }
-    }
-    if(previous->thrusting)
-    {
-        updateVelocity(previous->shipVelocity, previous->shipAngle, thrust * timePassed);
-    }
-    else
-    {
-        if(previous->shipVelocity->x >= 0)
-        {
-            previous->shipVelocity->x -= friction * timePassed;
-        }
-        else
-        {
-            previous->shipVelocity->x += friction * timePassed;
-        }
-        
-        if(previous->shipVelocity->y >= 0)
-        {
-            previous->shipVelocity->y -= friction * timePassed;
-        }
-        else
-        {
-            previous->shipVelocity->y += friction * timePassed;
-        }
-    }
-    if(previous->firing)
-    {
-        if(previous->lastFiredCooldown < 0 && previous->bullets->size() < maxBullets)
-        {
-            Bullet *bullet = new Bullet();
-            bullet->position = new vec2(previous->shipLoc->x + cos((previous->shipAngle - 90) * PI / 180) * 15,
-                                        previous->shipLoc->y + sin((previous->shipAngle - 90) * PI / 180) * 15);
-            bullet->velocity = new vec2(cos((previous->shipAngle - 90) * PI / 180) * bulletSpeed + previous->shipVelocity->x,
-                                        sin((previous->shipAngle - 90) * PI / 180) * bulletSpeed + previous->shipVelocity->y);
-            previous->lastFiredCooldown = fireRate;
-            previous->bullets->push_back(*bullet);
-        }
-    }
-    if(previous->teleporting)
-    {
-        if(previous->teleportCooldown < 0)
-        {
-            previous->shipLoc->x = rand() % width;
-            previous->shipLoc->y = rand() % height;
-            previous->shipVelocity->x = 0;
-            previous->shipVelocity->y = 0;
-            previous->teleportCooldown = teleportCooldown;
-        }
-    }
 }
 
 void GameEngine::updateLocation(vec2 *original, vec2 *velocity, double time)
@@ -293,34 +325,41 @@ void GameEngine::updateVelocity(vec2 *velocity, double angle, double add)
     velocity->y += sin((angle - 90) * PI / 180) * add;
 }
 
-vector<Asteroid> * GameEngine::createAsteroids(int number, vec2 *shipLoc)
+void GameEngine::createAsteroids(GameState& state, int number)
 {
-    vector<Asteroid> *asteroids = new vector<Asteroid>();
     for(int k = 0; k < number; k++)
     {
-        vec2 *tempPoint = new vec2(rand() % width, rand() % height);
-        while(sqrt(pow((tempPoint->x - shipLoc->x), 2) + pow((tempPoint->y - shipLoc->y), 2)) < 100)
+        vec2 tempPoint = vec2(rand() % width, rand() % height);
+        bool done = false;
+        while(!done)
         {
-            tempPoint->x = rand() % width;
-            tempPoint->y = rand() % height;
+            done = true;
+            for(int a = 0; a < state.ships.size(); a++)
+            {
+                if(sqrt(pow((tempPoint.x - state.ships[a].position.x), 2) + pow((tempPoint->y - state.ships[a].position.y), 2)) < 100)
+                {
+                    done = false;
+                    tempPoint->x = rand() % width;
+                    tempPoint->y = rand() % height;
+                    break;
+                }
+            }
         }
 
-        asteroids->push_back(*(createAsteroid(tempPoint, baseAsteroidRadius, asteroidSpeed)));
+        createAsteroid(state, tempPoint, baseAsteroidRadius, asteroidSpeed);
     }
-
-    return asteroids;
 }
 
-Asteroid * GameEngine::createAsteroid(vec2 *center, double radius, double velocity)
+void GameEngine::createAsteroid(GameState& state, vec2 center, double radius, double velocity)
 {
-    Asteroid *asteroid = new Asteroid();
-    asteroid->position = center;
-    asteroid->radius = radius;
+    Asteroid asteroid;
+    asteroid.position = center;
+    asteroid.radius = radius;
     double angle = abs(rand() % 360) * PI / 180;
-    asteroid->velocity = new vec2(velocity * cos(angle), velocity * sin(angle));
-    asteroid->points = new vector<vec2>();
+    asteroid.velocity.x = velocity * cos(angle)
+    asteroid.velocity.y = velocity * sin(angle);
     
-    int last = -5;
+    int last = -999;
     int sides = 7 + (abs(rand() % 5));
     double change = 360. / sides;
     angle = rand() % (int)(change / 2);
@@ -333,12 +372,12 @@ Asteroid * GameEngine::createAsteroid(vec2 *center, double radius, double veloci
             tempRadius = ((50 + abs(rand()) % 50) / 100.) * radius;
             last = k;
         }
-        vec2 *tempPoint = new vec2(tempRadius * cos(angle), tempRadius * sin(angle));
-        asteroid->points->push_back(*tempPoint);
+        vec2 tempPoint = vec2(tempRadius * cos(angle), tempRadius * sin(angle));
+        asteroid.points.push_back(tempPoint);
         angle = (k + 1) * change;
         angle += rand() % (int)(change / 2);
         angle = angle * PI / 180;
     }
 
-    return asteroid;
+    state.asteroids.push_back(asteroid);
 }
