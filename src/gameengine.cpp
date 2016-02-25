@@ -153,6 +153,7 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
     //we ran out of asteroids... we need more
     if(state.asteroids.size() == 0)
     {
+        state.nextNumAsteroids += 2;
         createAsteroids(state, state.nextNumAsteroids);
     }
 
@@ -212,7 +213,7 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
             bullet.position.x = state.ships.at(k).position.x + (dist * cos((state.ships.at(k).angle) * PI / 180 + angle));
             bullet.position.y = state.ships.at(k).position.y + (dist * sin((state.ships.at(k).angle) * PI / 180 + angle));
             bullet.velocity.x = cos((state.ships.at(k).angle - 90) * PI / 180) * bulletSpeed + state.ships.at(k).velocity.x;
-            bullet.velocity.y = cos((state.ships.at(k).angle - 90) * PI / 180) * bulletSpeed + state.ships.at(k).velocity.y;
+            bullet.velocity.y = sin((state.ships.at(k).angle - 90) * PI / 180) * bulletSpeed + state.ships.at(k).velocity.y;
             state.bullets.push_back(bullet);
 
             state.ships.at(k).fireCooldown = fireRate;
@@ -281,8 +282,11 @@ void GameEngine::detectCollisions(GameState& state)
         {
             for(unsigned int a = 0; a < state.asteroids.size(); a++)
             {
+                double dist = sqrt(pow(state.ships.at(k).shipPoints.at(t).x - state.asteroids.at(a).position.x, 2) +
+                        pow(state.ships.at(k).shipPoints.at(t).y - state.asteroids.at(a).position.y, 2));
+                cout << dist << endl;
                 if(sqrt(pow(state.ships.at(k).shipPoints.at(t).x - state.asteroids.at(a).position.x, 2) +
-                        pow(state.ships.at(k).shipPoints.at(t).y - state.asteroids.at(a).position.y, 2) < state.asteroids.at(a).radius))
+                        pow(state.ships.at(k).shipPoints.at(t).y - state.asteroids.at(a).position.y, 2)) < state.asteroids.at(a).radius)
                 {
                     //move ship offscreen so engine knows to put us back at start when clear
                     state.ships.at(k).position.x = -100;
