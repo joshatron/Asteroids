@@ -106,7 +106,37 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
     //update ship loctions
     for(unsigned int k = 0; k < state.ships.size(); k++)
     {
-        updateLocation(state.ships.at(k).position, state.ships.at(k).velocity, timePassed);
+        //if the ship died, it moved in negative space, so update to be centered again
+        if(state.ships.at(k).position.x < -50)
+        {
+            bool move = true;
+            for(unsigned int a = 0; a < state.asteroids.size(); a++)
+            {
+                if(sqrt(pow(width / 2 - state.asteroids.at(a).position.x, 2) + pow(height / 2 - state.asteroids.at(a).position.y, 2)) < 100)
+                {
+                    move = false;
+                    state.ships.at(k).fireCooldown = 10;
+                    state.ships.at(k).teleportCooldown = 10;
+                    state.ships.at(k).velocity.x = 0;
+                    state.ships.at(k).velocity.y = 0;
+                    state.ships.at(k).angle = 0;
+                    break;
+                }
+            }
+
+            if(move)
+            {
+                state.ships.at(k).position.x = width / 2;
+                state.ships.at(k).position.y = height / 2;
+                state.ships.at(k).fireCooldown = -1;
+                state.ships.at(k).teleportCooldown = -1;
+            }
+        }
+        //otherwise move normally
+        else
+        {
+            updateLocation(state.ships.at(0).position, state.ships.at(0).velocity, timePassed);
+        }
     }
 
     //update asteroid locations
@@ -123,30 +153,6 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
         if(state.bullets.at(k).age > bulletAge)
         {
             state.bullets.erase(state.bullets.begin() + k);
-        }
-    }
-
-    //if the main ship died, it moved in negative space, so update to be centered again
-    if(state.ships.at(0).position.x < -50)
-    {
-        bool move = true;
-        for(unsigned int k = 0; k < state.asteroids.size(); k++)
-        {
-            if(sqrt(pow(width / 2 - state.asteroids.at(k).position.x, 2) + pow(height / 2 - state.asteroids.at(k).position.y, 2)) < 100)
-            {
-                move = false;
-                state.ships.at(0).fireCooldown = 10;
-                state.ships.at(0).teleportCooldown = 10;
-                break;
-            }
-        }
-
-        if(move)
-        {
-            state.ships.at(0).position.x = width / 2;
-            state.ships.at(0).position.y = width / 2;
-            state.ships.at(0).fireCooldown = -1;
-            state.ships.at(0).teleportCooldown = -1;
         }
     }
 
@@ -186,22 +192,14 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
         //friction
         else
         {
-            if(state.ships.at(k).velocity.x >= 0)
+            double totalVel = sqrt(pow(state.ships.at(k).velocity.x, 2) + pow(state.ships.at(k).velocity.y, 2));
+            if(state.ships.at(k).velocity.x != 0)
             {
-                state.ships.at(k).velocity.x -= friction * timePassed;
+                state.ships.at(k).velocity.x -= (state.ships.at(k).velocity.x / totalVel) * friction * timePassed;
             }
-            else
+            if(state.ships.at(k).velocity.y != 0)
             {
-                state.ships.at(k).velocity.x += friction * timePassed;
-            }
-
-            if(state.ships.at(k).velocity.y >= 0)
-            {
-                state.ships.at(k).velocity.y -= friction * timePassed;
-            }
-            else
-            {
-                state.ships.at(k).velocity.y += friction * timePassed;
+                state.ships.at(k).velocity.y -= (state.ships.at(k).velocity.y / totalVel) * friction * timePassed;
             }
         }
         //firing
@@ -282,11 +280,9 @@ void GameEngine::detectCollisions(GameState& state)
         {
             for(unsigned int a = 0; a < state.asteroids.size(); a++)
             {
-                double dist = sqrt(pow(state.ships.at(k).shipPoints.at(t).x - state.asteroids.at(a).position.x, 2) +
-                        pow(state.ships.at(k).shipPoints.at(t).y - state.asteroids.at(a).position.y, 2));
-                cout << dist << endl;
-                if(sqrt(pow(state.ships.at(k).shipPoints.at(t).x - state.asteroids.at(a).position.x, 2) +
-                        pow(state.ships.at(k).shipPoints.at(t).y - state.asteroids.at(a).position.y, 2)) < state.asteroids.at(a).radius)
+                if(sqrt(pow(state.ships.at(k).shipPoints.at(t).x + state.ships.at(k).position.x - state.asteroids.at(a).position.x, 2) +
+                        pow(state.ships.at(k).shipPoints.at(t).y + state.ships.at(k).position.y - state.asteroids.at(a).position.y, 2)) <
+                        state.asteroids.at(a).radius)
                 {
                     //move ship offscreen so engine knows to put us back at start when clear
                     state.ships.at(k).position.x = -100;

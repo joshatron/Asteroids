@@ -26,7 +26,7 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent) {
     engine.createInitialState(state);
     QTimer *aTimer = new QTimer(this);
     connect(aTimer,SIGNAL(timeout()), this,SLOT(update()));
-    aTimer->start(10);
+    aTimer->start(5);
     first = chrono::system_clock::now();
     last = chrono::system_clock::now();
 }
