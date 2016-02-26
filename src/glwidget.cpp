@@ -127,8 +127,17 @@ void GLWidget::initializeShip()
     GLuint shipPositionBuffer;
     glGenBuffers(1, &shipPositionBuffer);
 
+    vector<vec2> allPoints;
+    for(unsigned int k = 0; k < state.ships.at(0).shipPoints.size(); k++)
+    {
+        allPoints.push_back(state.ships.at(0).shipPoints.at(k));
+    }
+    for(unsigned int k = 0; k < state.ships.at(0).shipFirePoints.size(); k++)
+    {
+        allPoints.push_back(state.ships.at(0).shipFirePoints.at(k));
+    }
     glBindBuffer(GL_ARRAY_BUFFER, shipPositionBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * state.ships.at(0).shipPoints.size(), state.ships.at(0).shipPoints.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * allPoints.size(), allPoints.data(), GL_STATIC_DRAW);
 
     shipProg = loadShaders(":/ship_vert.glsl", ":/frag.glsl");
     glUseProgram(shipProg);
