@@ -7,6 +7,7 @@
 
 using std::cout;
 using std::endl;
+using glm::distance;
 
 GameEngine::GameEngine()
 {
@@ -112,7 +113,7 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
             bool move = true;
             for(unsigned int a = 0; a < state.asteroids.size(); a++)
             {
-                if(sqrt(pow(width / 2 - state.asteroids.at(a).position.x, 2) + pow(height / 2 - state.asteroids.at(a).position.y, 2)) < 100)
+                if(distance(state.asteroids.at(a).position, vec2(width / 2, height / 2)) < 200)
                 {
                     move = false;
                     state.ships.at(k).fireCooldown = 10;
@@ -192,7 +193,7 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
         //friction
         else
         {
-            double totalVel = sqrt(pow(state.ships.at(k).velocity.x, 2) + pow(state.ships.at(k).velocity.y, 2));
+            double totalVel = distance(state.ships.at(k).velocity, vec2(0,0));
             if(state.ships.at(k).velocity.x != 0)
             {
                 state.ships.at(k).velocity.x -= (state.ships.at(k).velocity.x / totalVel) * friction * timePassed;
@@ -203,9 +204,9 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
             }
         }
         //firing
-        if(state.ships.at(k).firing && state.ships.at(k).bulletCooldowns.size() < maxBullets && state.ships.at(k).fireCooldown <= 0)
+        if(state.ships.at(k).firing && state.ships.at(k).bulletCooldowns.size() < (unsigned int)maxBullets && state.ships.at(k).fireCooldown <= 0)
         {
-            double dist = sqrt(pow(state.ships.at(k).bulletFirePoint.x, 2) + pow(state.ships.at(k).bulletFirePoint.y, 2));
+            double dist = distance(state.ships.at(k).bulletFirePoint, vec2(0,0));
             double angle = atan(state.ships.at(k).bulletFirePoint.y / state.ships.at(k).bulletFirePoint.x);
             Bullet bullet;
             bullet.position.x = state.ships.at(k).position.x + (dist * cos((state.ships.at(k).angle) * PI / 180 + angle));
@@ -237,8 +238,7 @@ void GameEngine::detectCollisions(GameState& state)
         for(unsigned int a = 0; a < state.asteroids.size(); a++)
         {
             //we are inside the asteroid radius
-            if(sqrt(pow(state.bullets.at(k).position.x - state.asteroids.at(a).position.x, 2) +
-                    pow(state.bullets.at(k).position.y - state.asteroids.at(a).position.y, 2)) < state.asteroids.at(a).radius)
+            if(distance(state.bullets.at(k).position, state.asteroids.at(a).position) < state.asteroids.at(a).radius)
             {
                 state.bullets.erase(state.bullets.begin() + k);
                 
@@ -280,9 +280,7 @@ void GameEngine::detectCollisions(GameState& state)
         {
             for(unsigned int a = 0; a < state.asteroids.size(); a++)
             {
-                if(sqrt(pow(state.ships.at(k).shipPoints.at(t).x + state.ships.at(k).position.x - state.asteroids.at(a).position.x, 2) +
-                        pow(state.ships.at(k).shipPoints.at(t).y + state.ships.at(k).position.y - state.asteroids.at(a).position.y, 2)) <
-                        state.asteroids.at(a).radius)
+                if(distance(state.ships.at(k).shipPoints.at(t) + state.ships.at(k).position, state.asteroids.at(a).position) < state.asteroids.at(a).radius)
                 {
                     //move ship offscreen so engine knows to put us back at start when clear
                     state.ships.at(k).position.x = -100;
@@ -365,7 +363,7 @@ void GameEngine::createAsteroids(GameState& state, int number)
             done = true;
             for(unsigned int a = 0; a < state.ships.size(); a++)
             {
-                if(sqrt(pow((tempPoint.x - state.ships[a].position.x), 2) + pow((tempPoint.y - state.ships[a].position.y), 2)) < 100)
+                if(distance(tempPoint, state.ships.at(a).position) < 200)
                 {
                     done = false;
                     tempPoint.x = rand() % width;
