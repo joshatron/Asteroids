@@ -6,6 +6,7 @@
 #include "asteroid.h"
 #include "ship.h"
 #include "animation.h"
+#include "stats.h"
 
 using glm::vec2;
 using std::vector;
@@ -21,5 +22,6 @@ class GameState
         double pauseTime;
         double playTime;
         vector<int> shipIndexes;
+        Stats stats;
 };
 #endif

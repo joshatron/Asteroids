@@ -34,6 +34,9 @@ void GameEngine::createInitialState(GameState& state)
 {
     state.shipIndexes.push_back(-1);
     createMainShip(state, vec2(width / 2, height / 2));
+    
+    state.stats.lives = 3;
+    state.stats.score = 0;
 
     //initialize asteroids
     state.nextNumAsteroids = baseAsteroids;
@@ -215,7 +218,7 @@ void GameEngine::detectCollisions(GameState& state)
             {
                 state.bullets.erase(state.bullets.begin() + k);
                 
-                destroyAsteroid(a);
+                destroyAsteroid(state, a);
                 a--;
 
                 break;
@@ -234,12 +237,12 @@ void GameEngine::detectCollisions(GameState& state)
             {
                 if(distance(state.ships.at(k).points.at(t) + state.ships.at(k).position, state.asteroids.at(a).position) < state.asteroids.at(a).radius)
                 {
-                    destroyShip(k);
+                    destroyShip(state, k);
                     k--;
                     ships--;
                     deleted = true;
 
-                    destroyAsteroid(a);
+                    destroyAsteroid(state, a);
                     a--;
 
                     break;
@@ -290,8 +293,6 @@ void GameEngine::createMainShip(GameState& state, vec2 location)
     mainShip.angle = 0;
     mainShip.fireCooldown = 0;
     mainShip.teleportCooldown = 0;
-    mainShip.lives = 3;
-    mainShip.score = 0;
     mainShip.turningLeft = false;
     mainShip.turningRight = false;
     mainShip.thrusting = false;
@@ -384,6 +385,8 @@ void GameEngine::destroyAsteroid(GameState& state, int index)
         createAsteroid(state, state.asteroids.at(index).position, baseAsteroidRadius / 2, asteroidSpeed * 2);
         createAsteroid(state, state.asteroids.at(index).position, baseAsteroidRadius / 2, asteroidSpeed * 2);
         state.asteroids.erase(state.asteroids.begin() + index);
+        addScore(state, 25);
+        state.stats.largeAsteroidsDestroyed++;
     }
     //if it was a middle one
     else if(state.asteroids.at(index).radius + .1 > baseAsteroidRadius / 2)
@@ -391,12 +394,17 @@ void GameEngine::destroyAsteroid(GameState& state, int index)
         createAsteroid(state, state.asteroids.at(index).position, baseAsteroidRadius / 3, asteroidSpeed * 3);
         createAsteroid(state, state.asteroids.at(index).position, baseAsteroidRadius / 3, asteroidSpeed * 3);
         state.asteroids.erase(state.asteroids.begin() + index);
+        addScore(state, 50);
+        state.stats.mediumAsteroidsDestroyed++;
     }
     //if it was the smallest one
     else
     {
         state.asteroids.erase(state.asteroids.begin() + index);
+        addScore(state, 100);
+        state.stats.smallAsteroidsDestroyed++;
     }
+
 }
 
 void GameEngine::destroyShip(GameState& state, int index)
@@ -407,7 +415,18 @@ void GameEngine::destroyShip(GameState& state, int index)
     {
         state.playTime = deathTime;
         state.shipIndexes.at(0) = -1;
+        state.stats.lives--;
 
         //create animation
     }
+}
+
+void GameEngine::addScore(GameState& state, int points)
+{
+    int score = state.stats.score;
+    if(score % 10000 > (score + points) % 10000)
+    {
+        state.stats.lives++;
+    }
+    state.stats.score += points;
 }

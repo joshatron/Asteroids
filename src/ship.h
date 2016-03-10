@@ -11,9 +11,6 @@ class Ship: public Object
         double fireCooldown;
         double teleportCooldown;
 
-        int lives;
-        int score;
-
         bool turningLeft;
         bool turningRight;
         bool thrusting;
