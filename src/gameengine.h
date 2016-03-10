@@ -26,6 +26,8 @@ class GameEngine
         void detectCollisions(GameState& state);
         void updateLocation(vec2& original, vec2& velocity, double time);
         void updateVelocity(vec2& velocity, double angle, double add);
+        void destroyAsteroid(GameState& state, int index);
+        void destroyShip(GameState& state, int index);
 
         double friction;
         double thrust;

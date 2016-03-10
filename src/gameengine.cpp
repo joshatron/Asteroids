@@ -215,31 +215,8 @@ void GameEngine::detectCollisions(GameState& state)
             {
                 state.bullets.erase(state.bullets.begin() + k);
                 
-                //if it was the largest one
-                if(state.asteroids.at(a).radius + .1 > baseAsteroidRadius)
-                {
-                    createAsteroid(state, state.asteroids.at(a).position, baseAsteroidRadius / 2, asteroidSpeed * 2);
-                    createAsteroid(state, state.asteroids.at(a).position, baseAsteroidRadius / 2, asteroidSpeed * 2);
-                    state.asteroids.erase(state.asteroids.begin() + a);
-                    //this is so we don't skip the next asteroid
-                    a--;
-                }
-                //if it was a middle one
-                else if(state.asteroids.at(a).radius + .1 > baseAsteroidRadius / 2)
-                {
-                    createAsteroid(state, state.asteroids.at(a).position, baseAsteroidRadius / 3, asteroidSpeed * 3);
-                    createAsteroid(state, state.asteroids.at(a).position, baseAsteroidRadius / 3, asteroidSpeed * 3);
-                    state.asteroids.erase(state.asteroids.begin() + a);
-                    //this is so we don't skip the next asteroid
-                    a--;
-                }
-                //if it was the smallest one
-                else
-                {
-                    state.asteroids.erase(state.asteroids.begin() + a);
-                    //this is so we don't skip the next asteroid
-                    a--;
-                }
+                destroyAsteroid(a);
+                a--;
 
                 break;
             }
@@ -257,45 +234,13 @@ void GameEngine::detectCollisions(GameState& state)
             {
                 if(distance(state.ships.at(k).points.at(t) + state.ships.at(k).position, state.asteroids.at(a).position) < state.asteroids.at(a).radius)
                 {
-                    //move ship offscreen so engine knows to put us back at start when clear
-                    state.ships.erase(state.ships.begin() + k);
-                    //main ship died
-                    if(state.shipIndexes.at(0) == k)
-                    {
-                        state.playTime = deathTime;
-                        state.shipIndexes.at(0) = -1;
-
-                        //create animation
-                    }
+                    destroyShip(k);
                     k--;
                     ships--;
                     deleted = true;
 
-                    //if it was the largest one
-                    if(state.asteroids.at(a).radius + .1 > baseAsteroidRadius)
-                    {
-                        createAsteroid(state, state.asteroids.at(a).position, baseAsteroidRadius / 2, asteroidSpeed * 2);
-                        createAsteroid(state, state.asteroids.at(a).position, baseAsteroidRadius / 2, asteroidSpeed * 2);
-                        state.asteroids.erase(state.asteroids.begin() + a);
-                        //this is so we don't skip the next asteroid
-                        a--;
-                    }
-                    //if it was a middle one
-                    else if(state.asteroids.at(a).radius + .1 > baseAsteroidRadius / 2)
-                    {
-                        createAsteroid(state, state.asteroids.at(a).position, baseAsteroidRadius / 3, asteroidSpeed * 3);
-                        createAsteroid(state, state.asteroids.at(a).position, baseAsteroidRadius / 3, asteroidSpeed * 3);
-                        state.asteroids.erase(state.asteroids.begin() + a);
-                        //this is so we don't skip the next asteroid
-                        a--;
-                    }
-                    //if it was the smallest one
-                    else
-                    {
-                        state.asteroids.erase(state.asteroids.begin() + a);
-                        //this is so we don't skip the next asteroid
-                        a--;
-                    }
+                    destroyAsteroid(a);
+                    a--;
 
                     break;
                 }
@@ -429,4 +374,40 @@ void GameEngine::createAsteroid(GameState& state, vec2 center, double radius, do
     }
 
     state.asteroids.push_back(asteroid);
+}
+
+void GameEngine::destroyAsteroid(GameState& state, int index)
+{
+    //if it was the largest one
+    if(state.asteroids.at(index).radius + .1 > baseAsteroidRadius)
+    {
+        createAsteroid(state, state.asteroids.at(index).position, baseAsteroidRadius / 2, asteroidSpeed * 2);
+        createAsteroid(state, state.asteroids.at(index).position, baseAsteroidRadius / 2, asteroidSpeed * 2);
+        state.asteroids.erase(state.asteroids.begin() + index);
+    }
+    //if it was a middle one
+    else if(state.asteroids.at(index).radius + .1 > baseAsteroidRadius / 2)
+    {
+        createAsteroid(state, state.asteroids.at(index).position, baseAsteroidRadius / 3, asteroidSpeed * 3);
+        createAsteroid(state, state.asteroids.at(index).position, baseAsteroidRadius / 3, asteroidSpeed * 3);
+        state.asteroids.erase(state.asteroids.begin() + index);
+    }
+    //if it was the smallest one
+    else
+    {
+        state.asteroids.erase(state.asteroids.begin() + index);
+    }
+}
+
+void GameEngine::destroyShip(GameState& state, int index)
+{
+    state.ships.erase(state.ships.begin() + index);
+    //main ship died
+    if(state.shipIndexes.at(0) == index)
+    {
+        state.playTime = deathTime;
+        state.shipIndexes.at(0) = -1;
+
+        //create animation
+    }
 }
