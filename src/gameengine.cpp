@@ -14,7 +14,7 @@ GameEngine::GameEngine()
     //these are best values found
     friction = 40;
     thrust = 300;
-    turnRate = 300;
+    turnRate = 5;
     bulletSpeed = 250;
     asteroidSpeed = 50;
     baseAsteroidRadius = 30;
@@ -145,16 +145,16 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
             state.ships.at(k).angle -= turnRate * timePassed;
             if(state.ships.at(k).angle < 0)
             {
-                state.ships.at(k).angle += 360;
+                state.ships.at(k).angle += 2 * PI;
             }
         }
         //turning right
         else if(state.ships.at(k).turningRight && !state.ships.at(k).turningLeft)
         {
             state.ships.at(k).angle += turnRate * timePassed;
-            if(state.ships.at(k).angle > 360)
+            if(state.ships.at(k).angle > 2 * PI)
             {
-                state.ships.at(k).angle -= 360;
+                state.ships.at(k).angle -= 2 * PI;
             }
         }
         //thrusting
@@ -181,10 +181,10 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
             double dist = distance(state.ships.at(k).bulletFirePoint, vec2(0,0));
             double angle = atan(state.ships.at(k).bulletFirePoint.y / state.ships.at(k).bulletFirePoint.x);
             Bullet bullet;
-            bullet.position.x = state.ships.at(k).position.x + (dist * cos((state.ships.at(k).angle) * PI / 180 + angle));
-            bullet.position.y = state.ships.at(k).position.y + (dist * sin((state.ships.at(k).angle) * PI / 180 + angle));
-            bullet.velocity.x = cos((state.ships.at(k).angle - 90) * PI / 180) * bulletSpeed + state.ships.at(k).velocity.x;
-            bullet.velocity.y = sin((state.ships.at(k).angle - 90) * PI / 180) * bulletSpeed + state.ships.at(k).velocity.y;
+            bullet.position.x = state.ships.at(k).position.x + (dist * cos(state.ships.at(k).angle + angle));
+            bullet.position.y = state.ships.at(k).position.y + (dist * sin(state.ships.at(k).angle + angle));
+            bullet.velocity.x = cos(state.ships.at(k).angle - (PI / 2)) * bulletSpeed + state.ships.at(k).velocity.x;
+            bullet.velocity.y = sin(state.ships.at(k).angle - (PI / 2)) * bulletSpeed + state.ships.at(k).velocity.y;
             bullet.age = bulletAge;
             state.bullets.push_back(bullet);
 
@@ -331,8 +331,8 @@ void GameEngine::updateLocation(vec2& original, vec2& velocity, double time)
 
 void GameEngine::updateVelocity(vec2& velocity, double angle, double add)
 {
-    velocity.x += cos((angle - 90) * PI / 180) * add;
-    velocity.y += sin((angle - 90) * PI / 180) * add;
+    velocity.x += cos(angle - (PI / 2)) * add;
+    velocity.y += sin(angle - (PI / 2)) * add;
 }
 
 void GameEngine::createMainShip(GameState& state, vec2 location)
@@ -400,6 +400,7 @@ void GameEngine::createAsteroids(GameState& state, int number)
 
 void GameEngine::createAsteroid(GameState& state, vec2 center, double radius, double velocity)
 {
+    //this method uses degrees instead of radians because it is easier to work with integers
     Asteroid asteroid;
     asteroid.position = center;
     asteroid.radius = radius;

@@ -235,7 +235,7 @@ void GLWidget::renderShip()
     if(state.shipIndexes.at(0) >= 0)
     {
         mat4 translate = glm::translate(mat4(1.0), vec3(state.ships.at(state.shipIndexes.at(0)).position, 0));
-        mat4 rotate = glm::rotate(mat4(1.0), (float)(state.ships.at(state.shipIndexes.at(0)).angle * PI / 180), vec3(0, 0, 1));
+        mat4 rotate = glm::rotate(mat4(1.0), (float)(state.ships.at(state.shipIndexes.at(0)).angle), vec3(0, 0, 1));
         shipTranslationMatrix = translate * rotate;
         glUseProgram(shipProg);
         glUniformMatrix4fv(shipTransMatrixLoc, 1, GL_FALSE, &shipTranslationMatrix[0][0]);
