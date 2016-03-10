@@ -2,16 +2,14 @@
 #define ASTEROID_H
 #include <glm/glm.hpp>
 #include <vector>
+#include "object.h"
 
 using glm::vec2;
 using std::vector;
 
-class Asteroid
+class Asteroid: public Object
 {
     public:
-        vec2 position;
-        vec2 velocity;
         double radius;
-        vector<vec2> points;
 };
 #endif

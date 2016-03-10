@@ -32,6 +32,7 @@ GameEngine::GameEngine()
 
 void GameEngine::createInitialState(GameState& state)
 {
+    state.shipIndexes.push_back(-1);
     createMainShip(state, vec2(width / 2, height / 2));
 
     //initialize asteroids
@@ -40,6 +41,19 @@ void GameEngine::createInitialState(GameState& state)
 
     //wait to start game for 3 seconds
     state.pauseTime = pauseTime;
+}
+
+void GameEngine::updateShipControls(GameState& state, bool turningLeft, bool turningRight, bool thrusting, bool firing, bool teleporting, int ship)
+{
+    int index = state.shipIndexes.at(ship);
+    if(index >= 0)
+    {
+        state.ships.at(index).turningLeft = turningLeft;
+        state.ships.at(index).turningRight = turningRight;
+        state.ships.at(index).thrusting = thrusting;
+        state.ships.at(index).firing = firing;
+        state.ships.at(index).teleporting = teleporting;
+    }
 }
 
 void GameEngine::getNextState(GameState& state, double timePassed)
@@ -60,7 +74,7 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
 
     state.playTime -= timePassed;
 
-    if(state.playTime <= 0 && state.mainShipIndex < 0)
+    if(state.playTime <= 0 && state.shipIndexes.at(0) < 0)
     {
         createMainShip(state, vec2(width / 2, height / 2));
     }
@@ -237,19 +251,19 @@ void GameEngine::detectCollisions(GameState& state)
     for(int k = 0; k < ships; k++)
     {
         bool deleted = false;
-        for(unsigned int t = 0; !deleted && t < state.ships.at(k).shipPoints.size(); t += 2)
+        for(unsigned int t = 0; !deleted && t < state.ships.at(k).points.size(); t += 2)
         {
             for(unsigned int a = 0; a < state.asteroids.size(); a++)
             {
-                if(distance(state.ships.at(k).shipPoints.at(t) + state.ships.at(k).position, state.asteroids.at(a).position) < state.asteroids.at(a).radius)
+                if(distance(state.ships.at(k).points.at(t) + state.ships.at(k).position, state.asteroids.at(a).position) < state.asteroids.at(a).radius)
                 {
                     //move ship offscreen so engine knows to put us back at start when clear
                     state.ships.erase(state.ships.begin() + k);
                     //main ship died
-                    if(state.mainShipIndex == k)
+                    if(state.shipIndexes.at(0) == k)
                     {
                         state.playTime = deathTime;
-                        state.mainShipIndex = -1;
+                        state.shipIndexes.at(0) = -1;
 
                         //create animation
                     }
@@ -288,6 +302,8 @@ void GameEngine::detectCollisions(GameState& state)
             }
         }
     }
+
+    //bullets and ships
 }
 
 void GameEngine::updateLocation(vec2& original, vec2& velocity, double time)
@@ -336,16 +352,16 @@ void GameEngine::createMainShip(GameState& state, vec2 location)
     mainShip.thrusting = false;
     mainShip.firing = false;
     mainShip.teleporting = false;
-    mainShip.shipPoints.push_back(vec2(0, -15));
-    mainShip.shipPoints.push_back(vec2(8, 15));
-    mainShip.shipPoints.push_back(vec2(8, 15));
-    mainShip.shipPoints.push_back(vec2(4, 10));
-    mainShip.shipPoints.push_back(vec2(4, 10));
-    mainShip.shipPoints.push_back(vec2(-4, 10));
-    mainShip.shipPoints.push_back(vec2(-4, 10));
-    mainShip.shipPoints.push_back(vec2(-8, 15));
-    mainShip.shipPoints.push_back(vec2(-8, 15));
-    mainShip.shipPoints.push_back(vec2(0, -15));
+    mainShip.points.push_back(vec2(0, -15));
+    mainShip.points.push_back(vec2(8, 15));
+    mainShip.points.push_back(vec2(8, 15));
+    mainShip.points.push_back(vec2(4, 10));
+    mainShip.points.push_back(vec2(4, 10));
+    mainShip.points.push_back(vec2(-4, 10));
+    mainShip.points.push_back(vec2(-4, 10));
+    mainShip.points.push_back(vec2(-8, 15));
+    mainShip.points.push_back(vec2(-8, 15));
+    mainShip.points.push_back(vec2(0, -15));
     mainShip.shipFirePoints.push_back(vec2(4, 10));
     mainShip.shipFirePoints.push_back(vec2(0, 20));
     mainShip.shipFirePoints.push_back(vec2(0, 20));
@@ -353,7 +369,7 @@ void GameEngine::createMainShip(GameState& state, vec2 location)
     mainShip.bulletFirePoint.x = 0;
     mainShip.bulletFirePoint.y = -15;
 
-    state.mainShipIndex = state.ships.size();
+    state.shipIndexes.at(0) = state.ships.size();
     state.ships.push_back(mainShip);
 }
 

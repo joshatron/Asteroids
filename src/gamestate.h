@@ -20,6 +20,6 @@ class GameState
         int nextNumAsteroids;
         double pauseTime;
         double playTime;
-        int mainShipIndex;
+        vector<int> shipIndexes;
 };
 #endif

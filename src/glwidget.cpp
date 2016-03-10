@@ -31,6 +31,11 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent) {
     aTimer->start(5);
     first = chrono::system_clock::now();
     last = chrono::system_clock::now();
+    turningLeft = false;
+    turningRight = false;
+    thrusting = false;
+    firing = false;
+    teleporting = false;
 }
 
 GLWidget::~GLWidget() {
@@ -41,38 +46,24 @@ void GLWidget::keyPressEvent(QKeyEvent *event)
     switch(event->key())
     {
         case Qt::Key_D:
-            if(state.mainShipIndex >= 0)
-            {
-                state.ships.at(state.mainShipIndex).turningLeft = true;
-                state.ships.at(state.mainShipIndex).turningRight = false;
-            }
+            turningLeft = true;
+            turningRight = false;
             break;
         case Qt::Key_F:
-            if(state.mainShipIndex >= 0)
-            {
-                state.ships.at(state.mainShipIndex).turningRight = true;
-                state.ships.at(state.mainShipIndex).turningLeft = false;
-            }
+            turningLeft = false;
+            turningRight = true;
             break;
         case Qt::Key_J:
-            if(state.mainShipIndex >= 0)
-            {
-                state.ships.at(state.mainShipIndex).firing = true;
-            }
+            firing = true;
             break;
         case Qt::Key_K:
-            if(state.mainShipIndex >= 0)
-            {
-                state.ships.at(state.mainShipIndex).thrusting = true;
-            }
+            thrusting = true;
             break;
         case Qt::Key_L:
-            if(state.mainShipIndex >= 0)
-            {
-                state.ships.at(state.mainShipIndex).teleporting = true;
-            }
+            teleporting = true;
             break;
     }
+    engine.updateShipControls(state, turningLeft, turningRight, thrusting, firing, teleporting, 0);
     update();
 }
 
@@ -81,36 +72,23 @@ void GLWidget::keyReleaseEvent(QKeyEvent *event)
     switch(event->key())
     {
         case Qt::Key_D:
-            if(state.mainShipIndex >= 0)
-            {
-                state.ships.at(state.mainShipIndex).turningLeft = false;
-            }
+            turningLeft = false;
             break;
         case Qt::Key_F:
-            if(state.mainShipIndex >= 0)
-            {
-                state.ships.at(state.mainShipIndex).turningRight = false;
-            }
-            break;
-        case Qt::Key_J:
-            if(state.mainShipIndex >= 0)
-            {
-                state.ships.at(state.mainShipIndex).firing = false;
-            }
+            turningRight = false;
             break;
         case Qt::Key_K:
-            if(state.mainShipIndex >= 0)
-            {
-                state.ships.at(state.mainShipIndex).thrusting = false;
-            }
+            thrusting = false;
+            break;
+        case Qt::Key_J:
+            firing = false;
             break;
         case Qt::Key_L:
-            if(state.mainShipIndex >= 0)
-            {
-                state.ships.at(state.mainShipIndex).teleporting = false;
-            }
+            teleporting = false;
             break;
     }
+    engine.updateShipControls(state, turningLeft, turningRight, thrusting, firing, teleporting, 0);
+    update();
 }
 
 void GLWidget::initializeGL() {
@@ -160,13 +138,13 @@ void GLWidget::initializeShip()
     glGenBuffers(1, &shipPositionBuffer);
 
     vector<vec2> allPoints;
-    for(unsigned int k = 0; k < state.ships.at(state.mainShipIndex).shipPoints.size(); k++)
+    for(unsigned int k = 0; k < state.ships.at(state.shipIndexes.at(0)).points.size(); k++)
     {
-        allPoints.push_back(state.ships.at(state.mainShipIndex).shipPoints.at(k));
+        allPoints.push_back(state.ships.at(state.shipIndexes.at(0)).points.at(k));
     }
-    for(unsigned int k = 0; k < state.ships.at(state.mainShipIndex).shipFirePoints.size(); k++)
+    for(unsigned int k = 0; k < state.ships.at(state.shipIndexes.at(0)).shipFirePoints.size(); k++)
     {
-        allPoints.push_back(state.ships.at(state.mainShipIndex).shipFirePoints.at(k));
+        allPoints.push_back(state.ships.at(state.shipIndexes.at(0)).shipFirePoints.at(k));
     }
     glBindBuffer(GL_ARRAY_BUFFER, shipPositionBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * allPoints.size(), allPoints.data(), GL_STATIC_DRAW);
@@ -254,19 +232,19 @@ void GLWidget::updatePositions()
 
 void GLWidget::renderShip()
 {
-    if(state.mainShipIndex >= 0)
+    if(state.shipIndexes.at(0) >= 0)
     {
-        mat4 translate = glm::translate(mat4(1.0), vec3(state.ships.at(state.mainShipIndex).position, 0));
-        mat4 rotate = glm::rotate(mat4(1.0), (float)(state.ships.at(state.mainShipIndex).angle * PI / 180), vec3(0, 0, 1));
+        mat4 translate = glm::translate(mat4(1.0), vec3(state.ships.at(state.shipIndexes.at(0)).position, 0));
+        mat4 rotate = glm::rotate(mat4(1.0), (float)(state.ships.at(state.shipIndexes.at(0)).angle * PI / 180), vec3(0, 0, 1));
         shipTranslationMatrix = translate * rotate;
         glUseProgram(shipProg);
         glUniformMatrix4fv(shipTransMatrixLoc, 1, GL_FALSE, &shipTranslationMatrix[0][0]);
         glBindVertexArray(shipVao);
-        glDrawArrays(GL_LINES, 0, state.ships.at(state.mainShipIndex).shipPoints.size());
+        glDrawArrays(GL_LINES, 0, state.ships.at(state.shipIndexes.at(0)).points.size());
         std::chrono::duration<double> elapsed_seconds = current - first;
-        if(state.ships.at(state.mainShipIndex).thrusting && (int)(elapsed_seconds.count() * 100) % 16 < 8)
+        if(state.ships.at(state.shipIndexes.at(0)).thrusting && (int)(elapsed_seconds.count() * 100) % 16 < 8)
         {
-            glDrawArrays(GL_LINES, state.ships.at(state.mainShipIndex).shipPoints.size(), state.ships.at(state.mainShipIndex).shipFirePoints.size());
+            glDrawArrays(GL_LINES, state.ships.at(state.shipIndexes.at(0)).points.size(), state.ships.at(state.shipIndexes.at(0)).shipFirePoints.size());
         }
     }
 }

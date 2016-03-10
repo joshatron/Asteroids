@@ -17,6 +17,7 @@ class GameEngine
         GameEngine();
         void createInitialState(GameState& state);
         void getNextState(GameState& state, double timePassed);
+        void updateShipControls(GameState& state, bool turningLeft, bool turningRight, bool thrusting, bool firing, bool teleporting, int ship);
     private:
         void createMainShip(GameState& state, vec2 location);
         void createAsteroids(GameState& state, int number);

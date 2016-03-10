@@ -74,6 +74,12 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
         int points;
 
         std::chrono::time_point<std::chrono::system_clock> first, last, current;
+
+        bool turningLeft;
+        bool turningRight;
+        bool thrusting;
+        bool firing;
+        bool teleporting;
 };
 
 #endif
