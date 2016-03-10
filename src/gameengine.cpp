@@ -21,6 +21,8 @@ GameEngine::GameEngine()
     bulletAge = 3;
     fireRate = .15;
     teleportCooldown = .5;
+    pauseTime = 1;
+    deathTime = 1;
     maxBullets = 4;
     baseAsteroids = 4;
     width = 1600;
@@ -30,47 +32,14 @@ GameEngine::GameEngine()
 
 void GameEngine::createInitialState(GameState& state)
 {
-    //initialize ship
-    Ship mainShip;
-    mainShip.position.x = width / 2;
-    mainShip.position.y = height / 2;
-    mainShip.velocity.x = 0;
-    mainShip.velocity.y = 0;
-    mainShip.angle = 0;
-    mainShip.fireCooldown = 0;
-    mainShip.teleportCooldown = 0;
-    mainShip.lives = 3;
-    mainShip.score = 0;
-    mainShip.turningLeft = false;
-    mainShip.turningRight = false;
-    mainShip.thrusting = false;
-    mainShip.firing = false;
-    mainShip.teleporting = false;
-    mainShip.shipPoints.push_back(vec2(0, -15));
-    mainShip.shipPoints.push_back(vec2(8, 15));
-    mainShip.shipPoints.push_back(vec2(8, 15));
-    mainShip.shipPoints.push_back(vec2(4, 10));
-    mainShip.shipPoints.push_back(vec2(4, 10));
-    mainShip.shipPoints.push_back(vec2(-4, 10));
-    mainShip.shipPoints.push_back(vec2(-4, 10));
-    mainShip.shipPoints.push_back(vec2(-8, 15));
-    mainShip.shipPoints.push_back(vec2(-8, 15));
-    mainShip.shipPoints.push_back(vec2(0, -15));
-    mainShip.shipFirePoints.push_back(vec2(4, 10));
-    mainShip.shipFirePoints.push_back(vec2(0, 20));
-    mainShip.shipFirePoints.push_back(vec2(0, 20));
-    mainShip.shipFirePoints.push_back(vec2(-4, 10));
-    mainShip.bulletFirePoint.x = 0;
-    mainShip.bulletFirePoint.y = -15;
-
-    state.ships.push_back(mainShip);
+    createMainShip(state, vec2(width / 2, height / 2));
 
     //initialize asteroids
     state.nextNumAsteroids = baseAsteroids;
     createAsteroids(state, state.nextNumAsteroids);
 
     //wait to start game for 3 seconds
-    state.pauseTime = 3.;
+    state.pauseTime = pauseTime;
 }
 
 void GameEngine::getNextState(GameState& state, double timePassed)
@@ -82,6 +51,19 @@ void GameEngine::getNextState(GameState& state, double timePassed)
 void GameEngine::updateObjects(GameState& state, double timePassed)
 {
     state.pauseTime -= timePassed;
+
+    //if we should be paused, exit
+    if(state.pauseTime > 0)
+    {
+        return;
+    }
+
+    state.playTime -= timePassed;
+
+    if(state.playTime <= 0 && state.mainShipIndex < 0)
+    {
+        createMainShip(state, vec2(width / 2, height / 2));
+    }
 
     //update ship cooldowns
     for(unsigned int k = 0; k < state.ships.size(); k++)
@@ -98,46 +80,10 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
         }
     }
 
-    //if we should be paused, exit
-    if(state.pauseTime > 0)
-    {
-        return;
-    }
-
     //update ship loctions
     for(unsigned int k = 0; k < state.ships.size(); k++)
     {
-        //if the ship died, it moved in negative space, so update to be centered again
-        if(state.ships.at(k).position.x < -50)
-        {
-            bool move = true;
-            for(unsigned int a = 0; a < state.asteroids.size(); a++)
-            {
-                if(distance(state.asteroids.at(a).position, vec2(width / 2, height / 2)) < 200)
-                {
-                    move = false;
-                    state.ships.at(k).fireCooldown = 10;
-                    state.ships.at(k).teleportCooldown = 10;
-                    state.ships.at(k).velocity.x = 0;
-                    state.ships.at(k).velocity.y = 0;
-                    state.ships.at(k).angle = 0;
-                    break;
-                }
-            }
-
-            if(move)
-            {
-                state.ships.at(k).position.x = width / 2;
-                state.ships.at(k).position.y = height / 2;
-                state.ships.at(k).fireCooldown = -1;
-                state.ships.at(k).teleportCooldown = -1;
-            }
-        }
-        //otherwise move normally
-        else
-        {
-            updateLocation(state.ships.at(0).position, state.ships.at(0).velocity, timePassed);
-        }
+        updateLocation(state.ships.at(k).position, state.ships.at(k).velocity, timePassed);
     }
 
     //update asteroid locations
@@ -150,10 +96,22 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
     for(unsigned int k = 0; k < state.bullets.size(); k++)
     {
         updateLocation(state.bullets.at(k).position, state.bullets.at(k).velocity, timePassed);
-        state.bullets.at(k).age += timePassed;
-        if(state.bullets.at(k).age > bulletAge)
+        state.bullets.at(k).age -= timePassed;
+        if(state.bullets.at(k).age <= 0)
         {
             state.bullets.erase(state.bullets.begin() + k);
+        }
+    }
+
+    //update and delete animations
+    for(unsigned int k = 0; k < state.animations.size(); k++)
+    {
+        updateLocation(state.animations.at(k).position, state.bullets.at(k).velocity, timePassed);
+        state.animations.at(k).angle += state.animations.at(k).turnRate * timePassed;
+        state.animations.at(k).age -= timePassed;
+        if(state.animations.at(k).age <= 0)
+        {
+            state.animations.erase(state.animations.begin() + k);
         }
     }
 
@@ -213,6 +171,7 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
             bullet.position.y = state.ships.at(k).position.y + (dist * sin((state.ships.at(k).angle) * PI / 180 + angle));
             bullet.velocity.x = cos((state.ships.at(k).angle - 90) * PI / 180) * bulletSpeed + state.ships.at(k).velocity.x;
             bullet.velocity.y = sin((state.ships.at(k).angle - 90) * PI / 180) * bulletSpeed + state.ships.at(k).velocity.y;
+            bullet.age = bulletAge;
             state.bullets.push_back(bullet);
 
             state.ships.at(k).fireCooldown = fireRate;
@@ -274,21 +233,29 @@ void GameEngine::detectCollisions(GameState& state)
     }
 
     //ships and asteroids
-    for(unsigned int k = 0; k < state.ships.size(); k++)
+    int ships = state.ships.size();
+    for(int k = 0; k < ships; k++)
     {
-        for(unsigned int t = 0; t < state.ships.at(k).shipPoints.size(); t += 2)
+        bool deleted = false;
+        for(unsigned int t = 0; !deleted && t < state.ships.at(k).shipPoints.size(); t += 2)
         {
             for(unsigned int a = 0; a < state.asteroids.size(); a++)
             {
                 if(distance(state.ships.at(k).shipPoints.at(t) + state.ships.at(k).position, state.asteroids.at(a).position) < state.asteroids.at(a).radius)
                 {
                     //move ship offscreen so engine knows to put us back at start when clear
-                    state.ships.at(k).position.x = -100;
-                    state.ships.at(k).position.y = -100;
-                    state.ships.at(k).velocity.x = 0;
-                    state.ships.at(k).velocity.y = 0;
-                    state.ships.at(k).angle = 0;
-                    state.ships.at(k).lives--;
+                    state.ships.erase(state.ships.begin() + k);
+                    //main ship died
+                    if(state.mainShipIndex == k)
+                    {
+                        state.playTime = deathTime;
+                        state.mainShipIndex = -1;
+
+                        //create animation
+                    }
+                    k--;
+                    ships--;
+                    deleted = true;
 
                     //if it was the largest one
                     if(state.asteroids.at(a).radius + .1 > baseAsteroidRadius)
@@ -350,6 +317,44 @@ void GameEngine::updateVelocity(vec2& velocity, double angle, double add)
 {
     velocity.x += cos((angle - 90) * PI / 180) * add;
     velocity.y += sin((angle - 90) * PI / 180) * add;
+}
+
+void GameEngine::createMainShip(GameState& state, vec2 location)
+{
+    Ship mainShip;
+    mainShip.position.x = location.x;
+    mainShip.position.y = location.y;
+    mainShip.velocity.x = 0;
+    mainShip.velocity.y = 0;
+    mainShip.angle = 0;
+    mainShip.fireCooldown = 0;
+    mainShip.teleportCooldown = 0;
+    mainShip.lives = 3;
+    mainShip.score = 0;
+    mainShip.turningLeft = false;
+    mainShip.turningRight = false;
+    mainShip.thrusting = false;
+    mainShip.firing = false;
+    mainShip.teleporting = false;
+    mainShip.shipPoints.push_back(vec2(0, -15));
+    mainShip.shipPoints.push_back(vec2(8, 15));
+    mainShip.shipPoints.push_back(vec2(8, 15));
+    mainShip.shipPoints.push_back(vec2(4, 10));
+    mainShip.shipPoints.push_back(vec2(4, 10));
+    mainShip.shipPoints.push_back(vec2(-4, 10));
+    mainShip.shipPoints.push_back(vec2(-4, 10));
+    mainShip.shipPoints.push_back(vec2(-8, 15));
+    mainShip.shipPoints.push_back(vec2(-8, 15));
+    mainShip.shipPoints.push_back(vec2(0, -15));
+    mainShip.shipFirePoints.push_back(vec2(4, 10));
+    mainShip.shipFirePoints.push_back(vec2(0, 20));
+    mainShip.shipFirePoints.push_back(vec2(0, 20));
+    mainShip.shipFirePoints.push_back(vec2(-4, 10));
+    mainShip.bulletFirePoint.x = 0;
+    mainShip.bulletFirePoint.y = -15;
+
+    state.mainShipIndex = state.ships.size();
+    state.ships.push_back(mainShip);
 }
 
 void GameEngine::createAsteroids(GameState& state, int number)

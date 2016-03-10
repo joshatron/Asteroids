@@ -6,6 +6,7 @@
 #include "bullet.h"
 #include "asteroid.h"
 #include "ship.h"
+#include "animation.h"
 
 using glm::vec2;
 using std::vector;
@@ -17,6 +18,7 @@ class GameEngine
         void createInitialState(GameState& state);
         void getNextState(GameState& state, double timePassed);
     private:
+        void createMainShip(GameState& state, vec2 location);
         void createAsteroids(GameState& state, int number);
         void createAsteroid(GameState& state, vec2 center, double radius, double velocity);
         void updateObjects(GameState& state, double timePassed);
@@ -33,6 +35,8 @@ class GameEngine
         double bulletAge;
         double fireRate;
         double teleportCooldown;
+        double pauseTime;
+        double deathTime;
         int maxBullets;
         int baseAsteroids;
         int width;

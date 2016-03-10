@@ -5,6 +5,7 @@
 #include "bullet.h"
 #include "asteroid.h"
 #include "ship.h"
+#include "animation.h"
 
 using glm::vec2;
 using std::vector;
@@ -15,7 +16,10 @@ class GameState
         vector<Ship> ships;
         vector<Bullet> bullets;
         vector<Asteroid> asteroids;
+        vector<Animation> animations;
         int nextNumAsteroids;
         double pauseTime;
+        double playTime;
+        int mainShipIndex;
 };
 #endif
