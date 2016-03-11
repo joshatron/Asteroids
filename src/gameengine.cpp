@@ -69,6 +69,10 @@ void GameEngine::getNextState(GameState& state, double timePassed)
 
 void GameEngine::updateObjects(GameState& state, double timePassed)
 {
+    if(state.stats.lives <= 0)
+    {
+        state.playTime = 999;
+    }
     state.pauseTime -= timePassed;
 
     //if we should be paused, exit
