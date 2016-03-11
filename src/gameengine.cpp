@@ -2,6 +2,8 @@
 #include "gameengine.h"
 #include <iostream>
 #include <cmath>
+#include "collision.h"
+#include "convex_shape.h"
 
 #define PI 3.14159265
 
@@ -213,8 +215,7 @@ void GameEngine::detectCollisions(GameState& state)
     {
         for(unsigned int a = 0; a < state.asteroids.size(); a++)
         {
-            //we are inside the asteroid radius
-            if(distance(state.bullets.at(k).position, state.asteroids.at(a).position) < state.asteroids.at(a).radius)
+            if(CollisionDetection::shapeAndPoint(state.asteroids.at(a), state.bullets.at(k).position) != -1)
             {
                 state.bullets.erase(state.bullets.begin() + k);
                 
@@ -223,6 +224,16 @@ void GameEngine::detectCollisions(GameState& state)
 
                 break;
             }
+            //we are inside the asteroid radius
+            /*if(distance(state.bullets.at(k).position, state.asteroids.at(a).position) < state.asteroids.at(a).radius)
+            {
+                state.bullets.erase(state.bullets.begin() + k);
+                
+                destroyAsteroid(state, a);
+                a--;
+
+                break;
+            }*/
         }
     }
 
@@ -353,7 +364,8 @@ void GameEngine::createAsteroid(GameState& state, vec2 center, double radius, do
     double angle = abs(rand() % 360) * PI / 180;
     asteroid.velocity.x = velocity * cos(angle);
     asteroid.velocity.y = velocity * sin(angle);
-    
+    asteroid.collisionShapes.push_back(ConvexShape());
+
     int last = -999;
     int sides = 7 + (abs(rand() % 5));
     double change = 360. / sides;
@@ -361,6 +373,7 @@ void GameEngine::createAsteroid(GameState& state, vec2 center, double radius, do
     angle = angle * PI / 180;
     for(int k = 0; k < sides; k++)
     {
+        asteroid.collisionShapes.at(0).points.push_back(vec2(radius * cos(angle), radius * sin(angle)));
         double tempRadius = radius;
         if(abs(rand()) % sides < 2 && last + 2 != k && last + 3 != k)
         {
@@ -372,6 +385,7 @@ void GameEngine::createAsteroid(GameState& state, vec2 center, double radius, do
         angle = (k + 1) * change;
         angle += rand() % (int)(change / 2);
         angle = angle * PI / 180;
+
     }
 
     state.asteroids.push_back(asteroid);

@@ -1,5 +1,5 @@
-HEADERS += glwidget.h gameengine.h gamestate.h asteroid.h bullet.h
-SOURCES += glwidget.cpp main.cpp gameengine.cpp
+HEADERS += glwidget.h gameengine.h gamestate.h asteroid.h bullet.h object.h ship.h convex_shape.h stats.h collision.h animation.h
+SOURCES += glwidget.cpp main.cpp gameengine.cpp collision.cpp
 
 macx {
 	QMAKE_MAC_SDK = macosx10.11

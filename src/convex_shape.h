@@ -1,12 +1,12 @@
-#ifndef CONCAVESHAPE_H
-#define CONCAVESHAPE_H
+#ifndef CONVEXSHAPE_H
+#define CONVEXSHAPE_H
 #include <glm/glm.hpp>
 #include <vector>
 
 using glm::vec2;
 using std::vector;
 
-class ConcaveShape
+class ConvexShape
 {
     public:
         vector<vec2> points;
