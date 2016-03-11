@@ -20,5 +20,6 @@ class CollisionDetection
 
     private:
         static bool rayIntersects(vec2 point, vec2 start, vec2 end);
+        static void transform(vec2& point, vec2 transform, double angle);
 };
 #endif

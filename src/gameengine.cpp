@@ -257,24 +257,17 @@ void GameEngine::detectCollisions(GameState& state)
     }
 
     //ships and asteroids
-    int ships = state.ships.size();
-    for(int k = 0; k < ships; k++)
+    for(unsigned int k = 0; k < state.ships.size(); k++)
     {
-        bool deleted = false;
-        for(unsigned int t = 0; !deleted && t < state.ships.at(k).points.size(); t += 2)
+        for(unsigned int a = 0; a < state.asteroids.size(); a++)
         {
-            for(unsigned int a = 0; a < state.asteroids.size(); a++)
+            if(CollisionDetection::twoShapes(state.ships.at(k), state.asteroids.at(a)) >= 0)
             {
-                if(distance(state.ships.at(k).points.at(t) + state.ships.at(k).position, state.asteroids.at(a).position) < state.asteroids.at(a).radius)
-                {
-                    destroyShip(state, k);
-                    k--;
-                    ships--;
-                    deleted = true;
+                destroyShip(state, k);
+                k--;
 
-                    destroyAsteroid(state, a);
-                    break;
-                }
+                destroyAsteroid(state, a);
+                break;
             }
         }
     }
@@ -341,7 +334,7 @@ void GameEngine::createMainShip(GameState& state, vec2 location)
     mainShip.collisionShapes.push_back(ConvexShape());
     mainShip.collisionShapes.at(0).points.push_back(vec2(0, -15));
     mainShip.collisionShapes.at(0).points.push_back(vec2(8, 15));
-    mainShip.collisionShapes.at(0).points.push_back(vec2(8, -15));
+    mainShip.collisionShapes.at(0).points.push_back(vec2(-8, 15));
 
     mainShip.shipFirePoints.push_back(vec2(4, 10));
     mainShip.shipFirePoints.push_back(vec2(0, 20));
