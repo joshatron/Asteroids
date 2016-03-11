@@ -17,10 +17,11 @@ int CollisionDetection::shapeAndPoint(Object object, vec2 point)
     for(unsigned int k = 0; k < object.collisionShapes.size(); k++)
     {
         int count = 0;
-        for(unsigned int a = 0; a < object.collisionShapes.at(k).points.size() - 1; a++)
+        int size = object.collisionShapes.at(k).points.size();
+        for(int a = 0; a < size; a++)
         {
             if(rayIntersects(point, object.collisionShapes.at(k).points.at(a) + object.position,
-                                    object.collisionShapes.at(k).points.at(a + 1) + object.position))
+                                    object.collisionShapes.at(k).points.at((a + 1) % size) + object.position))
             {
                 count++;
             }

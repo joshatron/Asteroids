@@ -81,7 +81,21 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
 
     if(state.playTime <= 0 && state.shipIndexes.at(0) < 0)
     {
-        createMainShip(state, vec2(width / 2, height / 2));
+        vec2 cent = vec2(width / 2, height / 2);
+        bool near = false;
+        for(unsigned int k = 0; k < state.asteroids.size(); k++)
+        {
+            if(distance(state.asteroids.at(k).position, cent) < 200)
+            {
+                near = true;
+                break;
+            }
+        }
+
+        if(!near)
+        {
+            createMainShip(state, cent);
+        }
     }
 
     //update ship cooldowns
@@ -215,25 +229,30 @@ void GameEngine::detectCollisions(GameState& state)
     {
         for(unsigned int a = 0; a < state.asteroids.size(); a++)
         {
-            if(CollisionDetection::shapeAndPoint(state.asteroids.at(a), state.bullets.at(k).position) != -1)
+            if(CollisionDetection::shapeAndPoint(state.asteroids.at(a), state.bullets.at(k).position) >= 0)
             {
                 state.bullets.erase(state.bullets.begin() + k);
+                k--;
                 
                 destroyAsteroid(state, a);
-                a--;
-
                 break;
             }
-            //we are inside the asteroid radius
-            /*if(distance(state.bullets.at(k).position, state.asteroids.at(a).position) < state.asteroids.at(a).radius)
+        }
+    }
+
+    //bullets and ships
+    for(unsigned int k = 0; k < state.bullets.size(); k++)
+    {
+        for(unsigned int a = 0; a < state.ships.size(); a++)
+        {
+            if(CollisionDetection::shapeAndPoint(state.ships.at(a), state.bullets.at(k).position) >= 0)
             {
                 state.bullets.erase(state.bullets.begin() + k);
+                k--;
                 
-                destroyAsteroid(state, a);
-                a--;
-
+                destroyShip(state, a);
                 break;
-            }*/
+            }
         }
     }
 
@@ -254,15 +273,11 @@ void GameEngine::detectCollisions(GameState& state)
                     deleted = true;
 
                     destroyAsteroid(state, a);
-                    a--;
-
                     break;
                 }
             }
         }
     }
-
-    //bullets and ships
 }
 
 void GameEngine::updateLocation(vec2& original, vec2& velocity, double time)
@@ -302,13 +317,16 @@ void GameEngine::createMainShip(GameState& state, vec2 location)
     mainShip.velocity.x = 0;
     mainShip.velocity.y = 0;
     mainShip.angle = 0;
+
     mainShip.fireCooldown = 0;
     mainShip.teleportCooldown = 0;
+
     mainShip.turningLeft = false;
     mainShip.turningRight = false;
     mainShip.thrusting = false;
     mainShip.firing = false;
     mainShip.teleporting = false;
+
     mainShip.points.push_back(vec2(0, -15));
     mainShip.points.push_back(vec2(8, 15));
     mainShip.points.push_back(vec2(8, 15));
@@ -319,12 +337,19 @@ void GameEngine::createMainShip(GameState& state, vec2 location)
     mainShip.points.push_back(vec2(-8, 15));
     mainShip.points.push_back(vec2(-8, 15));
     mainShip.points.push_back(vec2(0, -15));
+
+    mainShip.collisionShapes.push_back(ConvexShape());
+    mainShip.collisionShapes.at(0).points.push_back(vec2(0, -15));
+    mainShip.collisionShapes.at(0).points.push_back(vec2(8, 15));
+    mainShip.collisionShapes.at(0).points.push_back(vec2(8, -15));
+
     mainShip.shipFirePoints.push_back(vec2(4, 10));
     mainShip.shipFirePoints.push_back(vec2(0, 20));
     mainShip.shipFirePoints.push_back(vec2(0, 20));
     mainShip.shipFirePoints.push_back(vec2(-4, 10));
+
     mainShip.bulletFirePoint.x = 0;
-    mainShip.bulletFirePoint.y = -15;
+    mainShip.bulletFirePoint.y = -16;
 
     state.shipIndexes.at(0) = state.ships.size();
     state.ships.push_back(mainShip);
@@ -357,6 +382,9 @@ void GameEngine::createAsteroids(GameState& state, int number)
 
 void GameEngine::createAsteroid(GameState& state, vec2 center, double radius, double velocity)
 {
+    ConvexShape currentShape;
+    currentShape.points.push_back(vec2(0,0));
+
     //this method uses degrees instead of radians because it is easier to work with integers
     Asteroid asteroid;
     asteroid.position = center;
@@ -364,7 +392,6 @@ void GameEngine::createAsteroid(GameState& state, vec2 center, double radius, do
     double angle = abs(rand() % 360) * PI / 180;
     asteroid.velocity.x = velocity * cos(angle);
     asteroid.velocity.y = velocity * sin(angle);
-    asteroid.collisionShapes.push_back(ConvexShape());
 
     int last = -999;
     int sides = 7 + (abs(rand() % 5));
@@ -373,7 +400,6 @@ void GameEngine::createAsteroid(GameState& state, vec2 center, double radius, do
     angle = angle * PI / 180;
     for(int k = 0; k < sides; k++)
     {
-        asteroid.collisionShapes.at(0).points.push_back(vec2(radius * cos(angle), radius * sin(angle)));
         double tempRadius = radius;
         if(abs(rand()) % sides < 2 && last + 2 != k && last + 3 != k)
         {
@@ -382,11 +408,32 @@ void GameEngine::createAsteroid(GameState& state, vec2 center, double radius, do
         }
         vec2 tempPoint = vec2(tempRadius * cos(angle), tempRadius * sin(angle));
         asteroid.points.push_back(tempPoint);
+
+        currentShape.points.push_back(tempPoint);
+
+        if(last == k)
+        {
+            asteroid.collisionShapes.push_back(currentShape);
+            currentShape.points.clear();
+            currentShape.points.push_back(vec2(0,0));
+            currentShape.points.push_back(tempPoint);
+        }
+
         angle = (k + 1) * change;
         angle += rand() % (int)(change / 2);
         angle = angle * PI / 180;
 
     }
+
+    if(currentShape.points.size() == asteroid.points.size() + 1)
+    {
+        currentShape.points.erase(currentShape.points.begin());
+    }
+    else
+    {
+        currentShape.points.push_back(asteroid.points.at(0));
+    }
+    asteroid.collisionShapes.push_back(currentShape);
 
     state.asteroids.push_back(asteroid);
 }
