@@ -23,7 +23,7 @@ GameEngine::GameEngine()
     bulletAge = 3;
     fireRate = .15;
     teleportCooldown = .5;
-    pauseTime = 1;
+    pauseTime = 3;
     deathTime = 1;
     maxBullets = 4;
     baseAsteroids = 4;
@@ -386,6 +386,7 @@ void GameEngine::createAsteroid(GameState& state, vec2 center, double radius, do
     Asteroid asteroid;
     asteroid.position = center;
     asteroid.radius = radius;
+    asteroid.angle = 0;
     double angle = abs(rand() % 360) * PI / 180;
     asteroid.velocity.x = velocity * cos(angle);
     asteroid.velocity.y = velocity * sin(angle);

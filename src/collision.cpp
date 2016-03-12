@@ -58,11 +58,18 @@ int CollisionDetection::twoShapes(Object first, Object second)
             size = normals.size();
             for(int t = 0; t < size; t++)
             {
-                double minFirst = dot(normals.at(t), first.collisionShapes.at(k).points.at(0) + first.position);
+                vec2 current;
+                current.x = first.collisionShapes.at(k).points.at(0).x;
+                current.y = first.collisionShapes.at(k).points.at(0).y;
+                transform(current, first.position, first.angle);
+                double minFirst = dot(normals.at(t), current);
                 double maxFirst = minFirst;
                 for(unsigned int i = 0; i < first.collisionShapes.at(k).points.size(); i++)
                 {
-                    double p = dot(normals.at(t), first.collisionShapes.at(k).points.at(i) + first.position);
+                    current.x = first.collisionShapes.at(k).points.at(i).x;
+                    current.y = first.collisionShapes.at(k).points.at(i).y;
+                    transform(current, first.position, first.angle);
+                    double p = dot(normals.at(t), current);
                     if(p < minFirst)
                     {
                         minFirst = p;
@@ -73,11 +80,17 @@ int CollisionDetection::twoShapes(Object first, Object second)
                     }
                 }
 
-                double minSecond = dot(normals.at(t), second.collisionShapes.at(a).points.at(0) + second.position);
+                current.x = second.collisionShapes.at(a).points.at(0).x;
+                current.y = second.collisionShapes.at(a).points.at(0).y;
+                transform(current, second.position, second.angle);
+                double minSecond = dot(normals.at(t), current);
                 double maxSecond = minSecond;
                 for(unsigned int i = 0; i < second.collisionShapes.at(a).points.size(); i++)
                 {
-                    double p = dot(normals.at(t), second.collisionShapes.at(a).points.at(i) + second.position);
+                    current.x = second.collisionShapes.at(a).points.at(i).x;
+                    current.y = second.collisionShapes.at(a).points.at(i).y;
+                    transform(current, second.position, second.angle);
+                    double p = dot(normals.at(t), current);
                     if(p < minSecond)
                     {
                         minSecond = p;
