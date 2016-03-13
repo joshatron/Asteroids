@@ -193,6 +193,20 @@ void GLWidget::updatePositions()
             all.push_back(vec2(translationMatrix * vec4(state.ships.at(k).points.at(a), 0, 1)));
             points++;
         }
+
+        std::chrono::duration<double> elapsed_seconds = current - first;
+        if(state.ships.at(state.shipIndexes.at(0)).thrusting && (int)(elapsed_seconds.count() * 100) % 16 < 8)
+        {
+            for(unsigned int a = 0; a < state.ships.at(k).shipFirePoints.size(); a++)
+            {
+                mat4 translate = glm::translate(mat4(1.0), vec3(state.ships.at(k).position, 0));
+                mat4 rotate = glm::rotate(mat4(1.0), (float)(state.ships.at(k).angle), vec3(0, 0, 1));
+                mat4 translationMatrix = translate * rotate;
+                all.push_back(vec2(translationMatrix * vec4(state.ships.at(k).shipFirePoints.at(a), 0, 1)));
+                points++;
+            }
+        }
+
     }
 
     for(unsigned int k = 0; k < state.bullets.size(); k++)
