@@ -16,6 +16,8 @@
 
 using namespace std;
 using glm::mat4;
+using glm::vec3;
+using glm::vec4;
 
 
 GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent) {
@@ -24,7 +26,6 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent) {
     width = baseWidth;
     height = baseHeight;
     srand(time(NULL));
-    vec2 center(320, 240);
     engine.createInitialState(state);
     QTimer *aTimer = new QTimer(this);
     connect(aTimer,SIGNAL(timeout()), this,SLOT(update()));
@@ -125,40 +126,6 @@ void GLWidget::initializeGL() {
     glVertexAttribPointer(positionIndex, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
     projectionLoc = glGetUniformLocation(program, "projection");
-
-    initializeShip();
-}
-
-void GLWidget::initializeShip()
-{
-    glGenVertexArrays(1, &shipVao);
-    glBindVertexArray(shipVao);
-
-    GLuint shipPositionBuffer;
-    glGenBuffers(1, &shipPositionBuffer);
-
-    vector<vec2> allPoints;
-    for(unsigned int k = 0; k < state.ships.at(state.shipIndexes.at(0)).points.size(); k++)
-    {
-        allPoints.push_back(state.ships.at(state.shipIndexes.at(0)).points.at(k));
-    }
-    for(unsigned int k = 0; k < state.ships.at(state.shipIndexes.at(0)).shipFirePoints.size(); k++)
-    {
-        allPoints.push_back(state.ships.at(state.shipIndexes.at(0)).shipFirePoints.at(k));
-    }
-    glBindBuffer(GL_ARRAY_BUFFER, shipPositionBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * allPoints.size(), allPoints.data(), GL_STATIC_DRAW);
-
-    shipProg = loadShaders(":/ship_vert.glsl", ":/frag.glsl");
-    glUseProgram(shipProg);
-    
-    glBindBuffer(GL_ARRAY_BUFFER, shipPositionBuffer);
-    GLint positionIndex = glGetAttribLocation(shipProg, "position");
-    glEnableVertexAttribArray(positionIndex);
-    glVertexAttribPointer(positionIndex, 2, GL_FLOAT, GL_FALSE, 0, 0); 
-
-    shipProjMatrixLoc = glGetUniformLocation(shipProg, "projection");
-    shipTransMatrixLoc = glGetUniformLocation(shipProg, "translation");
 }
 
 void GLWidget::resizeGL(int w, int h) {
@@ -191,15 +158,8 @@ void GLWidget::paintGL() {
     updatePositions();
     glUseProgram(program);
     glBindVertexArray(vao);
-    int start = 0;
-    for(unsigned int k = 0; k < state.asteroids.size(); k++)
-    {
-        glDrawArrays(GL_LINE_LOOP, start, state.asteroids.at(k).points.size());
-        start += state.asteroids.at(k).points.size();
-    }
-    glDrawArrays(GL_POINTS, start, state.bullets.size());
-
-    renderShip();
+    glDrawArrays(GL_LINES, 0, points);
+    glDrawArrays(GL_POINTS, points, state.bullets.size());
 }
 
 void GLWidget::updatePositions()
@@ -210,43 +170,39 @@ void GLWidget::updatePositions()
     last = current;
     engine.getNextState(state, elapsed);
     points = 0;
-    vector<vec2> nonShip;
+    vector<vec2> all;
     for(unsigned int k = 0; k < state.asteroids.size(); k++)
     {
         for(unsigned int a = 0; a < state.asteroids.at(k).points.size(); a++)
         {
-            nonShip.push_back(state.asteroids.at(k).points.at(a) + state.asteroids.at(k).position);
+            mat4 translate = glm::translate(mat4(1.0), vec3(state.asteroids.at(k).position, 0));
+            mat4 rotate = glm::rotate(mat4(1.0), (float)(state.asteroids.at(k).angle), vec3(0, 0, 1));
+            mat4 translationMatrix = translate * rotate;
+            all.push_back(vec2(translationMatrix * vec4(state.asteroids.at(k).points.at(a), 0, 1)));
+            points++;
+        }
+    }
+
+    for(unsigned int k = 0; k < state.ships.size(); k++)
+    {
+        for(unsigned int a = 0; a < state.ships.at(k).points.size(); a++)
+        {
+            mat4 translate = glm::translate(mat4(1.0), vec3(state.ships.at(k).position, 0));
+            mat4 rotate = glm::rotate(mat4(1.0), (float)(state.ships.at(k).angle), vec3(0, 0, 1));
+            mat4 translationMatrix = translate * rotate;
+            all.push_back(vec2(translationMatrix * vec4(state.ships.at(k).points.at(a), 0, 1)));
             points++;
         }
     }
 
     for(unsigned int k = 0; k < state.bullets.size(); k++)
     {
-        nonShip.push_back(state.bullets.at(k).position);
+        all.push_back(state.bullets.at(k).position);
     }
 
     glUseProgram(program);
     glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * nonShip.size(), nonShip.data(), GL_DYNAMIC_DRAW);
-}
-
-void GLWidget::renderShip()
-{
-    if(state.shipIndexes.at(0) >= 0)
-    {
-        mat4 translate = glm::translate(mat4(1.0), vec3(state.ships.at(state.shipIndexes.at(0)).position, 0));
-        mat4 rotate = glm::rotate(mat4(1.0), (float)(state.ships.at(state.shipIndexes.at(0)).angle), vec3(0, 0, 1));
-        shipTranslationMatrix = translate * rotate;
-        glUseProgram(shipProg);
-        glUniformMatrix4fv(shipTransMatrixLoc, 1, GL_FALSE, &shipTranslationMatrix[0][0]);
-        glBindVertexArray(shipVao);
-        glDrawArrays(GL_LINES, 0, state.ships.at(state.shipIndexes.at(0)).points.size());
-        std::chrono::duration<double> elapsed_seconds = current - first;
-        if(state.ships.at(state.shipIndexes.at(0)).thrusting && (int)(elapsed_seconds.count() * 100) % 16 < 8)
-        {
-            glDrawArrays(GL_LINES, state.ships.at(state.shipIndexes.at(0)).points.size(), state.ships.at(state.shipIndexes.at(0)).shipFirePoints.size());
-        }
-    }
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * all.size(), all.data(), GL_DYNAMIC_DRAW);
 }
 
 // Copied from LoadShaders.cpp in the the oglpg-8th-edition.zip

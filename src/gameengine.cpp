@@ -352,6 +352,7 @@ void GameEngine::createAsteroid(GameState& state, vec2 center, double radius, do
     double change = 360. / sides;
     angle = rand() % (int)(change / 2);
     angle = angle * PI / 180;
+    vec2 first;
     for(int k = 0; k < sides; k++)
     {
         double tempRadius = radius;
@@ -361,7 +362,17 @@ void GameEngine::createAsteroid(GameState& state, vec2 center, double radius, do
             last = k;
         }
         vec2 tempPoint = vec2(tempRadius * cos(angle), tempRadius * sin(angle));
-        asteroid.points.push_back(tempPoint);
+        if(k == 0)
+        {
+            first.x = tempPoint.x;
+            first.y = tempPoint.y;
+            asteroid.points.push_back(tempPoint);
+        }
+        else
+        {
+            asteroid.points.push_back(tempPoint);
+            asteroid.points.push_back(tempPoint);
+        }
 
         currentShape.points.push_back(tempPoint);
 
@@ -378,6 +389,7 @@ void GameEngine::createAsteroid(GameState& state, vec2 center, double radius, do
         angle = angle * PI / 180;
 
     }
+    asteroid.points.push_back(first);
 
     if(currentShape.points.size() == asteroid.points.size() + 1)
     {
