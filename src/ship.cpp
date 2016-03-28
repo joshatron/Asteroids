@@ -1,4 +1,9 @@
 #include "ship.h"
+#include "bullet.h"
+
+#ifndef PI
+    #define PI 3.14159265
+#endif
 
 Ship::Ship(vec2 location)
 {
@@ -26,7 +31,7 @@ Ship::Ship(vec2 location)
     maxBullets = 4;
 }
 
-Ship::updateVelocity(GameState& state, double timePassed)
+void Ship::updateVelocity(double timePassed)
 {
     if(thrusting)
     {
@@ -35,7 +40,7 @@ Ship::updateVelocity(GameState& state, double timePassed)
     }
 }
 
-Ship::fire(GameState& state)
+Bullet Ship::fire()
 {
     double dist = distance(bulletFirePoint, vec2(0,0));
     double ang = atan(bulletFirePoint.y / bulletFirePoint.x);
@@ -45,6 +50,5 @@ Ship::fire(GameState& state)
     bullet.velocity.x = cos(angle - (PI / 2)) * bulletSpeed + velocity.x;
     bullet.velocity.y = sin(angle - (PI / 2)) * bulletSpeed + velocity.y;
     bullet.age = bulletAge;
-    state.bullets.push_back(bullet);
-
+    return bullet;
 }

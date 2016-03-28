@@ -2,16 +2,17 @@
 #define SHIP_H
 #include <glm/glm.hpp>
 #include "object.h"
-#include "gamestate.h"
+#include "bullet.h"
 
 using glm::vec2;
+using glm::distance;
 
 class Ship: public Object
 {
     public:
         Ship(vec2 location);
-        virtual void updateVelocity(GameState& state, double timePassed);
-        virtual void fire(GameState& state);
+        virtual void updateVelocity(double timePassed);
+        virtual Bullet fire();
 
         double fireCooldown;
         double teleportCooldown;

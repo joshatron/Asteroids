@@ -1,4 +1,7 @@
 #include "main_ship.h"
+#include <glm/glm.hpp>
+
+using glm::distance;
 
 MainShip::MainShip(vec2 location) : Ship(location)
 {
@@ -29,9 +32,9 @@ MainShip::MainShip(vec2 location) : Ship(location)
     friction = 40;
 }
 
-MainShip::updateVelocity(GameState& state, double timePassed)
+void MainShip::updateVelocity(double timePassed)
 {
-    Ship::updateVelocity(state, timePassed);
+    Ship::updateVelocity(timePassed);
     if(!thrusting)
     {
         double totalVel = distance(velocity, vec2(0,0));

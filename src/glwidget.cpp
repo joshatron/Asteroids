@@ -148,8 +148,6 @@ void GLWidget::resizeGL(int w, int h) {
 
     glUseProgram(program);
     glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, &projection[0][0]);
-    glUseProgram(shipProg);
-    glUniformMatrix4fv(shipProjMatrixLoc, 1, GL_FALSE, &projection[0][0]);
 }
 
 void GLWidget::paintGL() {

@@ -6,7 +6,9 @@
 #include "convex_shape.h"
 #include "main_ship.h"
 
-#define PI 3.14159265
+#ifndef PI
+    #define PI 3.14159265
+#endif
 
 using std::cout;
 using std::endl;
@@ -156,7 +158,7 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
     //update based on controls
     for(unsigned int k = 0; k < state.ships.size(); k++)
     {
-        state.ships.at(k).updateVelocity(state, timePassed);
+        state.ships.at(k).updateVelocity(timePassed);
         //turning left
         if(state.ships.at(k).turningLeft && !state.ships.at(k).turningRight)
         {
@@ -176,9 +178,9 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
             }
         }
         //firing
-        if(state.ships.at(k).firing && state.ships.at(k).bulletCooldowns.size() < (unsigned int)maxBullets && state.ships.at(k).fireCooldown <= 0)
+        if(state.ships.at(k).firing && state.ships.at(k).bulletCooldowns.size() < (unsigned int)state.ships.at(k).maxBullets && state.ships.at(k).fireCooldown <= 0)
         {
-            state.ships.at(k).fire(state);
+            state.bullets.push_back(state.ships.at(k).fire());
 
             state.ships.at(k).fireCooldown = state.ships.at(k).fireRate;
             state.ships.at(k).bulletCooldowns.push_back(state.ships.at(k).bulletAge);
