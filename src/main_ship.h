@@ -10,5 +10,9 @@ class MainShip: public Ship
 {
     public:
         MainShip(vec2 location);
+        void updateVelocity(GameState& state, double timePassed);
+        void fire(GameState& state);
+    private:
+        double friction;
 };
 #endif

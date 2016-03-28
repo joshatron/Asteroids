@@ -25,23 +25,14 @@ class GameEngine
         void updateObjects(GameState& state, double timePassed);
         void detectCollisions(GameState& state);
         void updateLocation(vec2& original, vec2& velocity, double time);
-        void updateVelocity(vec2& velocity, double angle, double add);
         void destroyAsteroid(GameState& state, int index);
         void destroyShip(GameState& state, int index);
         void addScore(GameState& state, int points);
 
-        double friction;
-        double thrust;
-        double turnRate;
-        double bulletSpeed;
         double asteroidSpeed;
         double baseAsteroidRadius;
-        double bulletAge;
-        double fireRate;
-        double teleportCooldown;
         double pauseTime;
         double deathTime;
-        int maxBullets;
         int baseAsteroids;
         int width;
         int height;

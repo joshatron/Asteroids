@@ -1,22 +1,7 @@
 #include "main_ship.h"
 
-MainShip::MainShip(vec2 location)
+MainShip::MainShip(vec2 location) : Ship(location)
 {
-    position.x = location.x;
-    position.y = location.y;
-    velocity.x = 0;
-    velocity.y = 0;
-    angle = 0;
-    
-    fireCooldown = 0;
-    teleportCooldown = 0;
-   
-    turningLeft = false;
-    turningRight = false;
-    thrusting = false;
-    firing = false;
-    teleporting = false;
-    
     points.push_back(vec2(0, -15));
     points.push_back(vec2(8, 15));
     points.push_back(vec2(8, 15));
@@ -40,4 +25,23 @@ MainShip::MainShip(vec2 location)
     
     bulletFirePoint.x = 0;
     bulletFirePoint.y = -16;
+
+    friction = 40;
+}
+
+MainShip::updateVelocity(GameState& state, double timePassed)
+{
+    Ship::updateVelocity(state, timePassed);
+    if(!thrusting)
+    {
+        double totalVel = distance(velocity, vec2(0,0));
+        if(velocity.x != 0)
+        {
+            velocity.x -= (velocity.x / totalVel) * friction * timePassed;
+        }
+        if(velocity.y != 0)
+        {
+            velocity.y -= (velocity.y / totalVel) * friction * timePassed;
+        }
+    }
 }
