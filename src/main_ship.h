@@ -11,7 +11,7 @@ class MainShip: public Ship
 {
     public:
         MainShip(vec2 location);
-        void updateVelocity(double timePassed);
+        virtual void updateVelocity(double timePassed);
     private:
         double friction;
 };

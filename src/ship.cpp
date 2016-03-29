@@ -46,7 +46,7 @@ Bullet Ship::fire()
     double ang = atan(bulletFirePoint.y / bulletFirePoint.x);
     Bullet bullet;
     bullet.position.x = position.x + (dist * cos(angle + ang));
-    bullet.position.y = position.y + (angle + ang);
+    bullet.position.y = position.y + (dist * sin(angle + ang));
     bullet.velocity.x = cos(angle - (PI / 2)) * bulletSpeed + velocity.x;
     bullet.velocity.y = sin(angle - (PI / 2)) * bulletSpeed + velocity.y;
     bullet.age = bulletAge;

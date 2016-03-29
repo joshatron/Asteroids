@@ -1,6 +1,9 @@
 #include "main_ship.h"
 #include <glm/glm.hpp>
+#include <iostream>
 
+using std::cout;
+using std::endl;
 using glm::distance;
 
 MainShip::MainShip(vec2 location) : Ship(location)
@@ -35,6 +38,7 @@ MainShip::MainShip(vec2 location) : Ship(location)
 void MainShip::updateVelocity(double timePassed)
 {
     Ship::updateVelocity(timePassed);
+    cout << "hi" << endl;
     if(!thrusting)
     {
         double totalVel = distance(velocity, vec2(0,0));
