@@ -5,6 +5,12 @@
 #include "collision.h"
 #include "convex_shape.h"
 #include "main_ship.h"
+#include "asteroid.h"
+#include "ship.h"
+#include "bullet.h"
+#include "star.h"
+#include "main_ship.h"
+#include "animation.h"
 
 #ifndef PI
     #define PI 3.14159265

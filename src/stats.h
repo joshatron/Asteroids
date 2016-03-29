@@ -11,5 +11,6 @@ class Stats
         int smallAsteroidsDestroyed;
         int largeShipsDestroyed;
         int smallShipsDestroyed;
+        double timeToReset;
 };
 #endif
