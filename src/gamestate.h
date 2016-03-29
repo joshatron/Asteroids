@@ -4,6 +4,7 @@
 #include <vector>
 #include "bullet.h"
 #include "asteroid.h"
+#include "star.h"
 #include "ship.h"
 #include "animation.h"
 #include "stats.h"
@@ -17,10 +18,11 @@ class GameState
         vector<Ship> ships;
         vector<Bullet> bullets;
         vector<Asteroid> asteroids;
+        vector<Star> stars;
         vector<Animation> animations;
         int nextNumAsteroids;
         double pauseTime;
-        double playTime;
+        double floatTime;
         vector<int> shipIndexes;
         Stats stats;
 };

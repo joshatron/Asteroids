@@ -66,7 +66,7 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
 {
     if(state.stats.lives <= 0)
     {
-        state.playTime = 999;
+        state.floatTime = 999;
     }
     state.pauseTime -= timePassed;
 
@@ -76,9 +76,9 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
         return;
     }
 
-    state.playTime -= timePassed;
+    state.floatTime -= timePassed;
 
-    if(state.playTime <= 0 && state.shipIndexes.at(0) < 0)
+    if(state.floatTime <= 0 && state.shipIndexes.at(0) < 0)
     {
         vec2 cent = vec2(width / 2, height / 2);
         bool near = false;
@@ -403,7 +403,7 @@ void GameEngine::destroyShip(GameState& state, int index)
     //main ship died
     if(state.shipIndexes.at(0) == index)
     {
-        state.playTime = deathTime;
+        state.floatTime = deathTime;
         state.shipIndexes.at(0) = -1;
         state.stats.lives--;
 
