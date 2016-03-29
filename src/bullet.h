@@ -1,14 +1,10 @@
 #ifndef BULLET_H
 #define BULLET_H
-#include <glm/glm.hpp>
+#include "object.h"
 
-using glm::vec2;
-
-class Bullet
+class Bullet: public Object
 {
     public:
-        vec2 position;
-        vec2 velocity;
         double age;
 };
 #endif

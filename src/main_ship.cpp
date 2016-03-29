@@ -31,20 +31,3 @@ MainShip::MainShip(vec2 location) : Ship(location)
 
     friction = 40;
 }
-
-void MainShip::updateVelocity(double timePassed)
-{
-    Ship::updateVelocity(timePassed);
-    if(!thrusting)
-    {
-        double totalVel = distance(velocity, vec2(0,0));
-        if(velocity.x != 0)
-        {
-            velocity.x -= (velocity.x / totalVel) * friction * timePassed;
-        }
-        if(velocity.y != 0)
-        {
-            velocity.y -= (velocity.y / totalVel) * friction * timePassed;
-        }
-    }
-}
