@@ -126,7 +126,7 @@ void GLWidget::paintGL() {
     glUseProgram(program);
     glBindVertexArray(vao);
     glDrawArrays(GL_LINES, 0, points);
-    glDrawArrays(GL_POINTS, points, state.bullets.size());
+    glDrawArrays(GL_POINTS, points, state.bullets.size() + state.stars.size());
 }
 
 void GLWidget::updatePositions()
@@ -179,6 +179,11 @@ void GLWidget::updatePositions()
     for(unsigned int k = 0; k < state.bullets.size(); k++)
     {
         all.push_back(state.bullets.at(k)->position);
+    }
+
+    for(unsigned int k = 0; k < state.stars.size(); k++)
+    {
+        all.push_back(state.stars.at(k)->position);
     }
 
     glUseProgram(program);

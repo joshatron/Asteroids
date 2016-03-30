@@ -30,6 +30,7 @@ GameEngine::GameEngine()
     baseAsteroidRadius = 30;
     pauseTime = 3;
     deathTime = 1;
+    gravityConstant = 1;
     baseAsteroids = 4;
     width = 1600;
     height = 900;
@@ -39,6 +40,11 @@ GameEngine::GameEngine()
 void GameEngine::createInitialState(GameState& state)
 {
     state.ships.push_back(make_shared<MainShip>(vec2(width / 2, height / 2)));
+
+    /*state.stars.push_back(make_shared<Star>());
+    state.stars.at(0)->position.x = width / 2;
+    state.stars.at(0)->position.y = height / 2;
+    state.stars.at(0)->gravity = 2000;*/
     
     shared_ptr<Stats> newStats(make_shared<Stats>());
     state.stats = newStats;
@@ -149,6 +155,30 @@ void GameEngine::updateObjectLocations(GameState& state, double timePassed)
     {
         state.nextNumAsteroids += 2;
         createAsteroids(state, state.nextNumAsteroids);
+    }
+
+    for(unsigned int a = 0; a < state.stars.size(); a++)
+    {
+        shared_ptr<Star> star = state.stars.at(a);
+        //update ship velocities based on gravities
+        for(unsigned int k = 0; k < state.ships.size(); k++)
+        {
+            shared_ptr<Ship> ship = state.ships.at(k);
+            double acceleration = gravityConstant * (star->gravity / distance(star->position, ship->position));
+            double angle = atan2(star->position.y - ship->position.y, star->position.x - ship->position.x);
+            ship->velocity.x += cos(angle) * acceleration;
+            ship->velocity.y += sin(angle) * acceleration;
+        }
+
+        //update bullet velocities based on gravities
+        for(unsigned int k = 0; k < state.bullets.size(); k++)
+        {
+            shared_ptr<Bullet> bullet = state.bullets.at(k);
+            double acceleration = gravityConstant * (star->gravity / distance(star->position, bullet->position));
+            double angle = atan2(star->position.y - bullet->position.y, star->position.x - bullet->position.x);
+            bullet->velocity.x += cos(angle) * acceleration;
+            bullet->velocity.y += sin(angle) * acceleration;
+        }
     }
 }
 

@@ -2,7 +2,6 @@
 #include <glm/glm.hpp>
 #include <QTextStream>
 
-using std::cout;
 using std::endl;
 using glm::distance;
 

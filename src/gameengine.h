@@ -28,6 +28,7 @@ class GameEngine
         double baseAsteroidRadius;
         double pauseTime;
         double deathTime;
+        double gravityConstant;
         int baseAsteroids;
         int width;
         int height;
