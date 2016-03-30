@@ -1,6 +1,6 @@
 #include "main_ship.h"
 #include <glm/glm.hpp>
-#include <iostream>
+#include <QTextStream>
 
 using std::cout;
 using std::endl;
@@ -29,26 +29,55 @@ MainShip::MainShip(vec2 location) : Ship(location)
     shipFirePoints.push_back(vec2(0, 20));
     shipFirePoints.push_back(vec2(-4, 10));
     
-    bulletFirePoint.x = 0;
-    bulletFirePoint.y = -16;
+    bulletFirePoints.push_back(vec2(0, -16));
 
     friction = 40;
 }
 
-void MainShip::updateVelocity(double timePassed)
+void MainShip::keyUpdate(int key, bool pressed)
 {
-    Ship::updateVelocity(timePassed);
-    cout << "hi" << endl;
-    if(!thrusting)
+    if(pressed)
     {
-        double totalVel = distance(velocity, vec2(0,0));
-        if(velocity.x != 0)
+        switch(key)
         {
-            velocity.x -= (velocity.x / totalVel) * friction * timePassed;
+            case Qt::Key_D:
+                turningLeft = true;
+                turningRight = false;
+                break;
+            case Qt::Key_F:
+                turningLeft = false;
+                turningRight = true;
+                break;
+            case Qt::Key_J:
+                firing = true;
+                break;
+            case Qt::Key_K:
+                thrusting = true;
+                break;
+            case Qt::Key_L:
+                teleporting = true;
+                break;
         }
-        if(velocity.y != 0)
+    }
+    else
+    {
+        switch(key)
         {
-            velocity.y -= (velocity.y / totalVel) * friction * timePassed;
+            case Qt::Key_D:
+                turningLeft = false;
+                break;
+            case Qt::Key_F:
+                turningRight = false;
+                break;
+            case Qt::Key_K:
+                thrusting = false;
+                break;
+            case Qt::Key_J:
+                firing = false;
+                break;
+            case Qt::Key_L:
+                teleporting = false;
+                break;
         }
     }
 }

@@ -1,18 +1,16 @@
 #ifndef SHIP_H
 #define SHIP_H
 #include <glm/glm.hpp>
+#include <vector>
 #include "object.h"
-#include "bullet.h"
 
 using glm::vec2;
-using glm::distance;
+using std::vector;
 
 class Ship: public Object
 {
     public:
         Ship(vec2 location);
-        virtual void updateVelocity(double timePassed);
-        virtual Bullet fire();
 
         double fireCooldown;
         double teleportCooldown;
@@ -25,10 +23,12 @@ class Ship: public Object
 
         double turnRate;
         double thrust;
+        double friction;
         double bulletAge;
         double bulletSpeed;
         double fireRate;
         double teleportRate;
+        double bulletAngle;
         int maxBullets;
 
         vector<double> bulletCooldowns;
@@ -36,6 +36,6 @@ class Ship: public Object
         //put in individual lines, not a line loop or strip
         vector<vec2> shipFirePoints;
 
-        vec2 bulletFirePoint;
+        vector<vec2> bulletFirePoints;
 };
 #endif

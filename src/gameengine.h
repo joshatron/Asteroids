@@ -3,13 +3,8 @@
 
 #include <glm/glm.hpp>
 #include "gamestate.h"
-#include "bullet.h"
-#include "asteroid.h"
-#include "ship.h"
-#include "animation.h"
 
 using glm::vec2;
-using std::vector;
 
 class GameEngine
 {
@@ -17,11 +12,11 @@ class GameEngine
         GameEngine();
         void createInitialState(GameState& state);
         void getNextState(GameState& state, double timePassed);
-        void updateShipControls(GameState& state, bool turningLeft, bool turningRight, bool thrusting, bool firing, bool teleporting, int ship);
     private:
         void createMainShip(GameState& state, vec2 location);
         void createAsteroids(GameState& state, int number);
         void createAsteroid(GameState& state, vec2 center, double radius, double velocity);
+        void updateObjectLocations(GameState& state, double timePassed);
         void updateObjects(GameState& state, double timePassed);
         void detectCollisions(GameState& state);
         void updateLocation(vec2& original, vec2& velocity, double time);

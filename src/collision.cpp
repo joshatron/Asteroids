@@ -10,44 +10,44 @@ using glm::dot;
 using std::cout;
 using std::endl;
 
-int CollisionDetection::twoShapes(Object first, Object second)
+int CollisionDetection::twoShapes(shared_ptr<Object> first, shared_ptr<Object> second)
 {
-    for(unsigned int k = 0; k < first.collisionShapes.size(); k++)
+    for(unsigned int k = 0; k < first->collisionShapes.size(); k++)
     {
-        for(unsigned int a = 0; a < second.collisionShapes.size(); a++)
+        for(unsigned int a = 0; a < second->collisionShapes.size(); a++)
         {
             //find axes
             vector<vec2> normals;
-            int size = first.collisionShapes.at(k).points.size();
+            int size = first->collisionShapes.at(k).points.size();
             for(int t = 0; t < size; t++)
             {
                 vec2 start;
-                start.x = first.collisionShapes.at(k).points.at(t).x;
-                start.y = first.collisionShapes.at(k).points.at(t).y;
-                transform(start, first.position, first.angle);
+                start.x = first->collisionShapes.at(k).points.at(t).x;
+                start.y = first->collisionShapes.at(k).points.at(t).y;
+                transform(start, first->position, first->angle);
 
                 vec2 end;
-                end.x = first.collisionShapes.at(k).points.at((t + 1) % size).x;
-                end.y = first.collisionShapes.at(k).points.at((t + 1) % size).y;
-                transform(end, first.position, first.angle);
+                end.x = first->collisionShapes.at(k).points.at((t + 1) % size).x;
+                end.y = first->collisionShapes.at(k).points.at((t + 1) % size).y;
+                transform(end, first->position, first->angle);
 
                 double dx = end.x - start.x;
                 double dy = end.y - start.y;
                 normals.push_back(vec2(-1 * dy, dx));
             }
 
-            size = second.collisionShapes.at(a).points.size();
+            size = second->collisionShapes.at(a).points.size();
             for(int t = 0; t < size; t++)
             {
                 vec2 start;
-                start.x = second.collisionShapes.at(a).points.at(t).x;
-                start.y = second.collisionShapes.at(a).points.at(t).y;
-                transform(start, second.position, second.angle);
+                start.x = second->collisionShapes.at(a).points.at(t).x;
+                start.y = second->collisionShapes.at(a).points.at(t).y;
+                transform(start, second->position, second->angle);
 
                 vec2 end;
-                end.x = second.collisionShapes.at(a).points.at((t + 1) % size).x;
-                end.y = second.collisionShapes.at(a).points.at((t + 1) % size).y;
-                transform(end, second.position, second.angle);
+                end.x = second->collisionShapes.at(a).points.at((t + 1) % size).x;
+                end.y = second->collisionShapes.at(a).points.at((t + 1) % size).y;
+                transform(end, second->position, second->angle);
 
                 double dx = end.x - start.x;
                 double dy = end.y - start.y;
@@ -59,16 +59,16 @@ int CollisionDetection::twoShapes(Object first, Object second)
             for(int t = 0; t < size; t++)
             {
                 vec2 current;
-                current.x = first.collisionShapes.at(k).points.at(0).x;
-                current.y = first.collisionShapes.at(k).points.at(0).y;
-                transform(current, first.position, first.angle);
+                current.x = first->collisionShapes.at(k).points.at(0).x;
+                current.y = first->collisionShapes.at(k).points.at(0).y;
+                transform(current, first->position, first->angle);
                 double minFirst = dot(normals.at(t), current);
                 double maxFirst = minFirst;
-                for(unsigned int i = 0; i < first.collisionShapes.at(k).points.size(); i++)
+                for(unsigned int i = 0; i < first->collisionShapes.at(k).points.size(); i++)
                 {
-                    current.x = first.collisionShapes.at(k).points.at(i).x;
-                    current.y = first.collisionShapes.at(k).points.at(i).y;
-                    transform(current, first.position, first.angle);
+                    current.x = first->collisionShapes.at(k).points.at(i).x;
+                    current.y = first->collisionShapes.at(k).points.at(i).y;
+                    transform(current, first->position, first->angle);
                     double p = dot(normals.at(t), current);
                     if(p < minFirst)
                     {
@@ -80,16 +80,16 @@ int CollisionDetection::twoShapes(Object first, Object second)
                     }
                 }
 
-                current.x = second.collisionShapes.at(a).points.at(0).x;
-                current.y = second.collisionShapes.at(a).points.at(0).y;
-                transform(current, second.position, second.angle);
+                current.x = second->collisionShapes.at(a).points.at(0).x;
+                current.y = second->collisionShapes.at(a).points.at(0).y;
+                transform(current, second->position, second->angle);
                 double minSecond = dot(normals.at(t), current);
                 double maxSecond = minSecond;
-                for(unsigned int i = 0; i < second.collisionShapes.at(a).points.size(); i++)
+                for(unsigned int i = 0; i < second->collisionShapes.at(a).points.size(); i++)
                 {
-                    current.x = second.collisionShapes.at(a).points.at(i).x;
-                    current.y = second.collisionShapes.at(a).points.at(i).y;
-                    transform(current, second.position, second.angle);
+                    current.x = second->collisionShapes.at(a).points.at(i).x;
+                    current.y = second->collisionShapes.at(a).points.at(i).y;
+                    transform(current, second->position, second->angle);
                     double p = dot(normals.at(t), current);
                     if(p < minSecond)
                     {
@@ -118,23 +118,23 @@ int CollisionDetection::twoShapes(Object first, Object second)
     return -1;
 }
 
-int CollisionDetection::shapeAndPoint(Object object, vec2 point)
+int CollisionDetection::shapeAndPoint(shared_ptr<Object> object, vec2 point)
 {
-    for(unsigned int k = 0; k < object.collisionShapes.size(); k++)
+    for(unsigned int k = 0; k < object->collisionShapes.size(); k++)
     {
         int count = 0;
-        int size = object.collisionShapes.at(k).points.size();
+        int size = object->collisionShapes.at(k).points.size();
         for(int a = 0; a < size; a++)
         {
             vec2 start;
-            start.x = object.collisionShapes.at(k).points.at(a).x;
-            start.y = object.collisionShapes.at(k).points.at(a).y;
-            transform(start, object.position, object.angle);
+            start.x = object->collisionShapes.at(k).points.at(a).x;
+            start.y = object->collisionShapes.at(k).points.at(a).y;
+            transform(start, object->position, object->angle);
 
             vec2 end;
-            end.x = object.collisionShapes.at(k).points.at((a + 1) % size).x;
-            end.y = object.collisionShapes.at(k).points.at((a + 1) % size).y;
-            transform(end, object.position, object.angle);
+            end.x = object->collisionShapes.at(k).points.at((a + 1) % size).x;
+            end.y = object->collisionShapes.at(k).points.at((a + 1) % size).y;
+            transform(end, object->position, object->angle);
 
             if(rayIntersects(point, start, end))
             {

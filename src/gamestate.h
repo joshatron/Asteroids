@@ -1,27 +1,28 @@
 #ifndef GAMESTATE_H
 #define GAMESTATE_H
-#include <glm/glm.hpp>
 #include <vector>
+#include <memory>
 #include "bullet.h"
 #include "asteroid.h"
+#include "star.h"
 #include "ship.h"
 #include "animation.h"
 #include "stats.h"
 
-using glm::vec2;
 using std::vector;
+using std::shared_ptr;
 
 class GameState
 {
     public:
-        vector<Ship> ships;
-        vector<Bullet> bullets;
-        vector<Asteroid> asteroids;
-        vector<Animation> animations;
+        vector<shared_ptr<Ship>> ships;
+        vector<shared_ptr<Bullet>> bullets;
+        vector<shared_ptr<Asteroid>> asteroids;
+        vector<shared_ptr<Star>> stars;
+        vector<shared_ptr<Animation>> animations;
         int nextNumAsteroids;
         double pauseTime;
-        double playTime;
-        vector<int> shipIndexes;
-        Stats stats;
+        double floatTime;
+        shared_ptr<Stats> stats;
 };
 #endif
