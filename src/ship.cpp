@@ -25,5 +25,6 @@ Ship::Ship(vec2 location)
     bulletSpeed = 250;
     fireRate = .15;
     teleportRate = .5; 
+    bulletAngle = 0;
     maxBullets = 4;
 }

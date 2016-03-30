@@ -5,7 +5,7 @@
 #include "object.h"
 
 using glm::vec2;
-using glm::vector;
+using std::vector;
 
 class Ship: public Object
 {
@@ -28,6 +28,7 @@ class Ship: public Object
         double bulletSpeed;
         double fireRate;
         double teleportRate;
+        double bulletAngle;
         int maxBullets;
 
         vector<double> bulletCooldowns;

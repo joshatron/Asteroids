@@ -16,6 +16,7 @@ class GameEngine
         void createMainShip(GameState& state, vec2 location);
         void createAsteroids(GameState& state, int number);
         void createAsteroid(GameState& state, vec2 center, double radius, double velocity);
+        void updateObjectLocations(GameState& state, double timePassed);
         void updateObjects(GameState& state, double timePassed);
         void detectCollisions(GameState& state);
         void updateLocation(vec2& original, vec2& velocity, double time);

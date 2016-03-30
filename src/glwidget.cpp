@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <algorithm>
+#include <memory>
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -44,51 +45,19 @@ GLWidget::~GLWidget() {
 
 void GLWidget::keyPressEvent(QKeyEvent *event)
 {
-    switch(event->key())
+    for(unsigned int k = 0; k < state.ships.size(); k++)
     {
-        case Qt::Key_D:
-            turningLeft = true;
-            turningRight = false;
-            break;
-        case Qt::Key_F:
-            turningLeft = false;
-            turningRight = true;
-            break;
-        case Qt::Key_J:
-            firing = true;
-            break;
-        case Qt::Key_K:
-            thrusting = true;
-            break;
-        case Qt::Key_L:
-            teleporting = true;
-            break;
+        state.ships.at(k)->keyUpdate(event->key(), true);
     }
-    engine.updateShipControls(state, turningLeft, turningRight, thrusting, firing, teleporting, 0);
     update();
 }
 
 void GLWidget::keyReleaseEvent(QKeyEvent *event)
 {
-    switch(event->key())
+    for(unsigned int k = 0; k < state.ships.size(); k++)
     {
-        case Qt::Key_D:
-            turningLeft = false;
-            break;
-        case Qt::Key_F:
-            turningRight = false;
-            break;
-        case Qt::Key_K:
-            thrusting = false;
-            break;
-        case Qt::Key_J:
-            firing = false;
-            break;
-        case Qt::Key_L:
-            teleporting = false;
-            break;
+        state.ships.at(k)->keyUpdate(event->key(), false);
     }
-    engine.updateShipControls(state, turningLeft, turningRight, thrusting, firing, teleporting, 0);
     update();
 }
 
@@ -171,36 +140,36 @@ void GLWidget::updatePositions()
     vector<vec2> all;
     for(unsigned int k = 0; k < state.asteroids.size(); k++)
     {
-        for(unsigned int a = 0; a < state.asteroids.at(k).points.size(); a++)
+        for(unsigned int a = 0; a < state.asteroids.at(k)->points.size(); a++)
         {
-            mat4 translate = glm::translate(mat4(1.0), vec3(state.asteroids.at(k).position, 0));
-            mat4 rotate = glm::rotate(mat4(1.0), (float)(state.asteroids.at(k).angle), vec3(0, 0, 1));
+            mat4 translate = glm::translate(mat4(1.0), vec3(state.asteroids.at(k)->position, 0));
+            mat4 rotate = glm::rotate(mat4(1.0), (float)(state.asteroids.at(k)->angle), vec3(0, 0, 1));
             mat4 translationMatrix = translate * rotate;
-            all.push_back(vec2(translationMatrix * vec4(state.asteroids.at(k).points.at(a), 0, 1)));
+            all.push_back(vec2(translationMatrix * vec4(state.asteroids.at(k)->points.at(a), 0, 1)));
             points++;
         }
     }
 
     for(unsigned int k = 0; k < state.ships.size(); k++)
     {
-        for(unsigned int a = 0; a < state.ships.at(k).points.size(); a++)
+        for(unsigned int a = 0; a < state.ships.at(k)->points.size(); a++)
         {
-            mat4 translate = glm::translate(mat4(1.0), vec3(state.ships.at(k).position, 0));
-            mat4 rotate = glm::rotate(mat4(1.0), (float)(state.ships.at(k).angle), vec3(0, 0, 1));
+            mat4 translate = glm::translate(mat4(1.0), vec3(state.ships.at(k)->position, 0));
+            mat4 rotate = glm::rotate(mat4(1.0), (float)(state.ships.at(k)->angle), vec3(0, 0, 1));
             mat4 translationMatrix = translate * rotate;
-            all.push_back(vec2(translationMatrix * vec4(state.ships.at(k).points.at(a), 0, 1)));
+            all.push_back(vec2(translationMatrix * vec4(state.ships.at(k)->points.at(a), 0, 1)));
             points++;
         }
 
         std::chrono::duration<double> elapsed_seconds = current - first;
-        if(state.ships.at(state.shipIndexes.at(0)).thrusting && (int)(elapsed_seconds.count() * 100) % 16 < 8)
+        if(state.ships.at(k)->thrusting && (int)(elapsed_seconds.count() * 100) % 16 < 8)
         {
-            for(unsigned int a = 0; a < state.ships.at(k).shipFirePoints.size(); a++)
+            for(unsigned int a = 0; a < state.ships.at(k)->shipFirePoints.size(); a++)
             {
-                mat4 translate = glm::translate(mat4(1.0), vec3(state.ships.at(k).position, 0));
-                mat4 rotate = glm::rotate(mat4(1.0), (float)(state.ships.at(k).angle), vec3(0, 0, 1));
+                mat4 translate = glm::translate(mat4(1.0), vec3(state.ships.at(k)->position, 0));
+                mat4 rotate = glm::rotate(mat4(1.0), (float)(state.ships.at(k)->angle), vec3(0, 0, 1));
                 mat4 translationMatrix = translate * rotate;
-                all.push_back(vec2(translationMatrix * vec4(state.ships.at(k).shipFirePoints.at(a), 0, 1)));
+                all.push_back(vec2(translationMatrix * vec4(state.ships.at(k)->shipFirePoints.at(a), 0, 1)));
                 points++;
             }
         }
@@ -209,7 +178,7 @@ void GLWidget::updatePositions()
 
     for(unsigned int k = 0; k < state.bullets.size(); k++)
     {
-        all.push_back(state.bullets.at(k).position);
+        all.push_back(state.bullets.at(k)->position);
     }
 
     glUseProgram(program);

@@ -2,7 +2,6 @@
 #define OBJECT_H
 #include <vector>
 #include "convex_shape.h"
-#include "gamestate.h"
 
 #ifndef PI
     #define PI 3.14159265
@@ -12,6 +11,7 @@
 using glm::distance;
 using std::vector;
 
+class GameState;
 class Object
 {
     public:
