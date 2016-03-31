@@ -107,18 +107,19 @@ void GameEngine::updateObjectLocations(GameState& state, double timePassed)
     //update ships
     for(unsigned int k = 0; k < state.ships.size(); k++)
     {
-        state.ships.at(k)->fireCooldown -= timePassed;
-        state.ships.at(k)->teleportCooldown -= timePassed;
-        for(unsigned int a = 0; a < state.ships.at(k)->bulletCooldowns.size(); a++)
+        shared_ptr<Ship> ship = state.ships.at(k);
+        ship->fireCooldown -= timePassed;
+        ship->teleportCooldown -= timePassed;
+        for(unsigned int a = 0; a < ship->bulletCooldowns.size(); a++)
         {
-            state.ships.at(k)->bulletCooldowns.at(a) -= timePassed;
-            if(state.ships.at(k)->bulletCooldowns.at(a) <= 0)
+            ship->bulletCooldowns.at(a) -= timePassed;
+            if(ship->bulletCooldowns.at(a) <= 0)
             {
-                state.ships.at(k)->bulletCooldowns.erase(state.ships.at(k)->bulletCooldowns.begin() + a);
+                ship->bulletCooldowns.erase(ship->bulletCooldowns.begin() + a);
             }
         }
 
-        updateLocation(state.ships.at(k)->position, state.ships.at(k)->velocity, timePassed);
+        updateLocation(ship->position, ship->velocity, timePassed);
     }
 
     //update asteroid locations
@@ -141,10 +142,11 @@ void GameEngine::updateObjectLocations(GameState& state, double timePassed)
     //update and delete animations
     for(unsigned int k = 0; k < state.animations.size(); k++)
     {
-        updateLocation(state.animations.at(k)->position, state.bullets.at(k)->velocity, timePassed);
-        state.animations.at(k)->angle += state.animations.at(k)->turnRate * timePassed;
-        state.animations.at(k)->age -= timePassed;
-        if(state.animations.at(k)->age <= 0)
+        shared_ptr<Animation> animation = state.animations.at(k);
+        updateLocation(animation->position, animation->velocity, timePassed);
+        animation->angle += animation->turnRate * timePassed;
+        animation->age -= timePassed;
+        if(animation->age <= 0)
         {
             state.animations.erase(state.animations.begin() + k);
         }
@@ -187,68 +189,69 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
     //update based on controls
     for(unsigned int k = 0; k < state.ships.size(); k++)
     {
+        shared_ptr<Ship> ship = state.ships.at(k);
         //turning left
-        if(state.ships.at(k)->turningLeft && !state.ships.at(k)->turningRight)
+        if(ship->turningLeft && !ship->turningRight)
         {
-            state.ships.at(k)->angle -= state.ships.at(k)->turnRate * timePassed;
-            if(state.ships.at(k)->angle < 0)
+            ship->angle -= ship->turnRate * timePassed;
+            if(ship->angle < 0)
             {
-                state.ships.at(k)->angle += 2 * PI;
+                ship->angle += 2 * PI;
             }
         }
         //turning right
-        else if(state.ships.at(k)->turningRight && !state.ships.at(k)->turningLeft)
+        else if(ship->turningRight && !ship->turningLeft)
         {
-            state.ships.at(k)->angle += state.ships.at(k)->turnRate * timePassed;
-            if(state.ships.at(k)->angle > 2 * PI)
+            ship->angle += ship->turnRate * timePassed;
+            if(ship->angle > 2 * PI)
             {
-                state.ships.at(k)->angle -= 2 * PI;
+                ship->angle -= 2 * PI;
             }
         }
-        if(state.ships.at(k)->thrusting)
+        if(ship->thrusting)
         {
-            state.ships.at(k)->velocity.x += cos(state.ships.at(k)->angle - (PI / 2)) * (state.ships.at(k)->thrust * timePassed);
-            state.ships.at(k)->velocity.y += sin(state.ships.at(k)->angle - (PI / 2)) * (state.ships.at(k)->thrust * timePassed);
+            ship->velocity.x += cos(ship->angle - (PI / 2)) * (ship->thrust * timePassed);
+            ship->velocity.y += sin(ship->angle - (PI / 2)) * (ship->thrust * timePassed);
         }
         else
         {
-            double totalVel = distance(state.ships.at(k)->velocity, vec2(0,0));
-            if(state.ships.at(k)->velocity.x != 0)
+            double totalVel = distance(ship->velocity, vec2(0,0));
+            if(ship->velocity.x != 0)
             {
-                state.ships.at(k)->velocity.x -= (state.ships.at(k)->velocity.x / totalVel) * state.ships.at(k)->friction * timePassed;
+                ship->velocity.x -= (ship->velocity.x / totalVel) * ship->friction * timePassed;
             }
-            if(state.ships.at(k)->velocity.y != 0)
+            if(ship->velocity.y != 0)
             {
-                state.ships.at(k)->velocity.y -= (state.ships.at(k)->velocity.y / totalVel) * state.ships.at(k)->friction * timePassed;
+                ship->velocity.y -= (ship->velocity.y / totalVel) * ship->friction * timePassed;
             }
         }
         //firing
-        if(state.ships.at(k)->firing && state.ships.at(k)->bulletCooldowns.size() < (unsigned int)state.ships.at(k)->maxBullets && state.ships.at(k)->fireCooldown <= 0)
+        if(ship->firing && ship->bulletCooldowns.size() < (unsigned int)ship->maxBullets && ship->fireCooldown <= 0)
         {
-            for(unsigned int a = 0; a < state.ships.at(k)->bulletFirePoints.size(); a++)
+            for(unsigned int a = 0; a < ship->bulletFirePoints.size(); a++)
             {
-                double dist = distance(state.ships.at(k)->bulletFirePoints.at(a), vec2(0,0));
-                double angle = atan(state.ships.at(k)->bulletFirePoints.at(a).y / state.ships.at(k)->bulletFirePoints.at(a).x);
+                double dist = distance(ship->bulletFirePoints.at(a), vec2(0,0));
+                double angle = atan(ship->bulletFirePoints.at(a).y / ship->bulletFirePoints.at(a).x);
                 shared_ptr<Bullet> bullet(make_shared<Bullet>());
-                bullet->position.x = state.ships.at(k)->position.x + (dist * cos(state.ships.at(k)->angle + angle));
-                bullet->position.y = state.ships.at(k)->position.y + (dist * sin(state.ships.at(k)->angle + angle));
-                bullet->velocity.x = cos(state.ships.at(k)->angle - (PI / 2)) * state.ships.at(k)->bulletSpeed + state.ships.at(k)->velocity.x;
-                bullet->velocity.y = sin(state.ships.at(k)->angle - (PI / 2)) * state.ships.at(k)->bulletSpeed + state.ships.at(k)->velocity.y;
-                bullet->age = state.ships.at(k)->bulletAge;
+                bullet->position.x = ship->position.x + (dist * cos(ship->angle + angle));
+                bullet->position.y = ship->position.y + (dist * sin(ship->angle + angle));
+                bullet->velocity.x = cos(ship->angle - (PI / 2)) * ship->bulletSpeed + ship->velocity.x;
+                bullet->velocity.y = sin(ship->angle - (PI / 2)) * ship->bulletSpeed + ship->velocity.y;
+                bullet->age = ship->bulletAge;
                 state.bullets.push_back(bullet);
             }
 
-            state.ships.at(k)->fireCooldown = state.ships.at(k)->fireRate;
-            state.ships.at(k)->bulletCooldowns.push_back(state.ships.at(k)->bulletAge);
+            ship->fireCooldown = ship->fireRate;
+            ship->bulletCooldowns.push_back(ship->bulletAge);
         }
         //teleporting
-        if(state.ships.at(k)->teleporting && state.ships.at(k)->teleportCooldown <= 0)
+        if(ship->teleporting && ship->teleportCooldown <= 0)
         {
-            state.ships.at(k)->position.x = abs(rand() % width);
-            state.ships.at(k)->position.y = abs(rand() % height);
-            state.ships.at(k)->velocity.x = 0;
-            state.ships.at(k)->velocity.y = 0;
-            state.ships.at(k)->teleportCooldown = state.ships.at(k)->teleportRate;
+            ship->position.x = abs(rand() % width);
+            ship->position.y = abs(rand() % height);
+            ship->velocity.x = 0;
+            ship->velocity.y = 0;
+            ship->teleportCooldown = ship->teleportRate;
         }
     }
 }
@@ -425,20 +428,21 @@ void GameEngine::createAsteroid(GameState& state, vec2 center, double radius, do
 
 void GameEngine::destroyAsteroid(GameState& state, int index)
 {
+    shared_ptr<Asteroid> asteroid = state.asteroids.at(index);
     //if it was the largest one
-    if(state.asteroids.at(index)->radius + .1 > baseAsteroidRadius)
+    if(asteroid->radius + .1 > baseAsteroidRadius)
     {
-        createAsteroid(state, state.asteroids.at(index)->position, baseAsteroidRadius / 2, asteroidSpeed * 2);
-        createAsteroid(state, state.asteroids.at(index)->position, baseAsteroidRadius / 2, asteroidSpeed * 2);
+        createAsteroid(state, asteroid->position, baseAsteroidRadius / 2, asteroidSpeed * 2);
+        createAsteroid(state, asteroid->position, baseAsteroidRadius / 2, asteroidSpeed * 2);
         state.asteroids.erase(state.asteroids.begin() + index);
         addScore(state, 25);
         state.stats->largeAsteroidsDestroyed++;
     }
     //if it was a middle one
-    else if(state.asteroids.at(index)->radius + .1 > baseAsteroidRadius / 2)
+    else if(asteroid->radius + .1 > baseAsteroidRadius / 2)
     {
-        createAsteroid(state, state.asteroids.at(index)->position, baseAsteroidRadius / 3, asteroidSpeed * 3);
-        createAsteroid(state, state.asteroids.at(index)->position, baseAsteroidRadius / 3, asteroidSpeed * 3);
+        createAsteroid(state, asteroid->position, baseAsteroidRadius / 3, asteroidSpeed * 3);
+        createAsteroid(state, asteroid->position, baseAsteroidRadius / 3, asteroidSpeed * 3);
         state.asteroids.erase(state.asteroids.begin() + index);
         addScore(state, 50);
         state.stats->mediumAsteroidsDestroyed++;
@@ -450,7 +454,6 @@ void GameEngine::destroyAsteroid(GameState& state, int index)
         addScore(state, 100);
         state.stats->smallAsteroidsDestroyed++;
     }
-
 }
 
 void GameEngine::destroyShip(GameState& state, int index)
