@@ -8,7 +8,7 @@ using glm::vec2;
 class MainShip: public Ship
 {
     public:
-        void keyUpdate(int key, bool pressed);
         MainShip(vec2 location);
+        void keyUpdate(int key, bool pressed);
 };
 #endif

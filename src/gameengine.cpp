@@ -1,6 +1,7 @@
+#include "gameengine.h"
 #include <stdlib.h>
 #include <memory>
-#include "gameengine.h"
+#include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <cmath>
 #include "collision.h"
@@ -22,6 +23,10 @@ using std::endl;
 using std::make_shared;
 using std::shared_ptr;
 using glm::distance;
+using glm::vec3;
+using glm::vec4;
+using glm::mat4;
+using glm::rotate;
 
 GameEngine::GameEngine()
 {
@@ -458,7 +463,7 @@ void GameEngine::destroyAsteroid(GameState& state, int index)
 
 void GameEngine::destroyShip(GameState& state, int index)
 {
-    state.ships.erase(state.ships.begin() + index);
+    shared_ptr<Ship> ship = state.ships.at(index);
     //main ship died
     if(state.stats->mainShipIndex == index)
     {
@@ -467,7 +472,18 @@ void GameEngine::destroyShip(GameState& state, int index)
         state.stats->lives--;
 
         //create animation
+        state.animations.push_back(make_shared<Animation>(vec2(0,-15),vec2(8,15),ship->position,
+                                    vec2(15,-4),0,0,.75));
+        state.animations.push_back(make_shared<Animation>(vec2(0,-15),vec2(-8,15),ship->position,
+                                    vec2(-15,-4),0,0,.75));
+        state.animations.push_back(make_shared<Animation>(vec2(4,10),vec2(8,15),ship->position,
+                                    vec2(8,18),0,0,.75));
+        state.animations.push_back(make_shared<Animation>(vec2(-4,10),vec2(-8,15),ship->position,
+                                    vec2(-8,18),0,0,.75));
+        state.animations.push_back(make_shared<Animation>(vec2(4,10),vec2(-4,10),ship->position,
+                                    vec2(0,20),0,0,.75));
     }
+    state.ships.erase(state.ships.begin() + index);
 }
 
 void GameEngine::addScore(GameState& state, int points)

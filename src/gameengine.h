@@ -1,6 +1,7 @@
 #ifndef GAMEENGINE_H
 #define GAMEENGINE_H
 
+#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include "gamestate.h"
 

@@ -176,6 +176,16 @@ void GLWidget::updatePositions()
 
     }
 
+    for(unsigned int k = 0; k < state.animations.size(); k++)
+    {
+        mat4 translate = glm::translate(mat4(1.0), vec3(state.animations.at(k)->position, 0));
+        mat4 rotate = glm::rotate(mat4(1.0), (float)(state.animations.at(k)->angle), vec3(0, 0, 1));
+        mat4 translationMatrix = translate * rotate;
+        all.push_back(vec2(translationMatrix * vec4(state.animations.at(k)->start, 0, 1)));
+        all.push_back(vec2(translationMatrix * vec4(state.animations.at(k)->end, 0, 1)));
+        points += 2;
+    }
+
     for(unsigned int k = 0; k < state.bullets.size(); k++)
     {
         all.push_back(state.bullets.at(k)->position);
