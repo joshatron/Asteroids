@@ -31,41 +31,12 @@ using glm::rotate;
 GameEngine::GameEngine()
 {
     //these are best values found
-    currentIndex = 1;
-    basePauseTime = 3;
-    baseDeathTime = 1;
-    baseAsteroids = 4;
-    width = 1600;
-    height = 900;
     srand(time(NULL));
 }
 
 void GameEngine::createInitialState(GameState& state)
 {
-    state.width = width;
-    state.height = height;
-    state.asteroidSpeed = 50;
-    state.baseAsteroidRadius = 30;
-    state.gravityConstant = 1;
-    state.objects.push_back(make_shared<MainShip>(vec2(width / 2, height / 2), 1));
-
-    /*state.stars.push_back(make_shared<Star>());
-    state.stars.at(0)->position.x = width / 2;
-    state.stars.at(0)->position.y = height / 2;
-    state.stars.at(0)->gravity = 1000;*/
-    
-    shared_ptr<Stats> newStats(make_shared<Stats>());
-    state.stats = newStats;
-    state.stats->lives = 3;
-    state.stats->score = 0;
-    state.stats->mainShipIndex = 0;
-
-    //initialize asteroids
-    state.nextNumAsteroids = baseAsteroids;
-    createAsteroids(state, state.nextNumAsteroids);
-
-    //wait to start game for 3 seconds
-    state.pauseTime = basePauseTime;
+    controller.initialize(state);
 }
 
 void GameEngine::getNextState(GameState& state, double timePassed)
@@ -77,48 +48,12 @@ void GameEngine::getNextState(GameState& state, double timePassed)
 
 void GameEngine::updateObjectLocations(GameState& state, double timePassed)
 {
-    if(state.stats->lives <= 0)
-    {
-        state.floatTime = 999;
-    }
-    state.pauseTime -= timePassed;
-    state.stats->timeToReset -= timePassed;
-
+    controller.updateTimers(state, timePassed);
     //if we should be paused, exit
-    if(state.pauseTime > 0)
+    if(controller.pauseTime > 0)
     {
         return;
     }
-
-    state.floatTime -= timePassed;
-
-    //reset (for after a death)
-    /*if(state.stats->timeToReset <= 0 && state.stats->mainShipIndex == -1 && state.stats->lives > 0)
-    {
-        vec2 cent = vec2(width / 2, height / 2);
-        bool near = false;
-        for(unsigned int k = 0; k < state.asteroids.size(); k++)
-        {
-            if(distance(state.asteroids.at(k)->position, cent) < 150)
-            {
-                near = true;
-                break;
-            }
-        }
-
-        if(!near)
-        {
-            state.stats->mainShipIndex = state.ships.size();
-            state.ships.push_back(make_shared<MainShip>(cent));
-        }
-    }*/
-
-    //we ran out of asteroids... we need more
-    /*if(state.asteroids.size() == 0)
-    {
-        state.nextNumAsteroids += 2;
-        createAsteroids(state, state.nextNumAsteroids);
-    }*/
 
     for(unsigned int k = 0; k < state.objects.size(); k++)
     {
@@ -129,7 +64,14 @@ void GameEngine::updateObjectLocations(GameState& state, double timePassed)
         if(object->timeToLive <= 0)
         {
             vector<shared_ptr<Object>> newOnes = object->destroy(state, -1);
-            state.objects.insert(state.objects.end(), newOnes.begin(), newOnes.end());
+
+            for(unsigned int a = 0; a < newOnes.size(); a++)
+            {
+                controller.updateCount(state, newOnes.at(a)->typeIndex, true);
+                state.objects.push_back(newOnes.at(a));
+            }
+
+            controller.updateCount(state, state.objects.at(k)->typeIndex, false);
             state.objects.erase(state.objects.begin() + k);
         }
         //apply gravity
@@ -152,10 +94,13 @@ void GameEngine::updateObjectLocations(GameState& state, double timePassed)
 
 void GameEngine::updateObjects(GameState& state, double timePassed)
 {
-    for(unsigned int k = 0; k < state.objects.size(); k++)
+    if(controller.pauseTime <= 0 && controller.floatTime <= 0)
     {
-        vector<shared_ptr<Object>> newOnes = state.objects.at(k)->updateFromControls(state, timePassed);
-        state.objects.insert(state.objects.end(), newOnes.begin(), newOnes.end());
+        for(unsigned int k = 0; k < state.objects.size(); k++)
+        {
+            vector<shared_ptr<Object>> newOnes = state.objects.at(k)->updateFromControls(state, timePassed);
+            state.objects.insert(state.objects.end(), newOnes.begin(), newOnes.end());
+        }
     }
 }
 
@@ -175,15 +120,31 @@ void GameEngine::detectCollisions(GameState& state)
                         int region2 = CollisionDetection::twoShapes(state.objects.at(a), state.objects.at(k));
 
                         vector<shared_ptr<Object>> newOnes = state.objects.at(k)->destroy(state, region);
-                        state.objects.insert(state.objects.end(), newOnes.begin(), newOnes.end());
+
+                        for(unsigned int a = 0; a < newOnes.size(); a++)
+                        {
+                            controller.updateCount(state, newOnes.at(a)->typeIndex, true);
+                            state.objects.push_back(newOnes.at(a));
+                        }
+
+                        controller.updateCount(state, state.objects.at(k)->typeIndex, false);
                         state.objects.erase(state.objects.begin() + k);
+
                         k--;
                         a--;
 
                         vector<shared_ptr<Object>> newOnes2 = state.objects.at(a)->destroy(state, region2);
-                        state.objects.insert(state.objects.end(), newOnes2.begin(), newOnes2.end());
-                        state.objects.erase(state.objects.begin() + a);
-                        a--;
+
+                        for(unsigned int a = 0; a < newOnes2.size(); a++)
+                        {
+                            controller.updateCount(state, newOnes2.at(a)->typeIndex, true);
+                            state.objects.push_back(newOnes2.at(a));
+                        }
+
+                        controller.updateCount(state, state.objects.at(k)->typeIndex, false);
+                        state.objects.erase(state.objects.begin() + k);
+
+                        break;
                     }
                 }
             }
@@ -211,32 +172,6 @@ void GameEngine::updateLocation(vec2& original, vec2& velocity, double time)
     else if(original.y < 0)
     {
         original.y = original.y + height;
-    }
-}
-
-void GameEngine::createAsteroids(GameState& state, int number)
-{
-    for(int k = 0; k < number; k++)
-    {
-        vec2 tempPoint = vec2(rand() % width, rand() % height);
-        bool done = false;
-        while(!done)
-        {
-            done = true;
-            for(unsigned int a = 0; a < state.objects.size(); a++)
-            {
-                if(distance(tempPoint, state.objects.at(a)->position) < 200)
-                {
-                    done = false;
-                    tempPoint.x = rand() % width;
-                    tempPoint.y = rand() % height;
-                    break;
-                }
-            }
-        }
-
-        shared_ptr<Object> asteroid(make_shared<Asteroid>(tempPoint, state.baseAsteroidRadius, state.asteroidSpeed));
-        state.objects.push_back(asteroid);
     }
 }
 

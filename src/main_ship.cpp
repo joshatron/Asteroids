@@ -27,10 +27,13 @@ Ship(location, index)
     collisionShapes.at(0).points.push_back(vec2(8, 15));
     collisionShapes.at(0).points.push_back(vec2(-8, 15));
     
-    shipFirePoints.push_back(vec2(4, 10));
-    shipFirePoints.push_back(vec2(0, 20));
-    shipFirePoints.push_back(vec2(0, 20));
-    shipFirePoints.push_back(vec2(-4, 10));
+    tempPoints.push_back(vec2(4, 10));
+    tempPoints.push_back(vec2(0, 20));
+    tempPoints.push_back(vec2(0, 20));
+    tempPoints.push_back(vec2(-4, 10));
+
+    period = 0;
+    percent = .5;
     
     bulletFirePoints.push_back(vec2(0, -16));
 
@@ -56,6 +59,7 @@ void MainShip::keyUpdate(int key, bool pressed)
                 break;
             case Qt::Key_K:
                 thrusting = true;
+                period = .16;
                 break;
             case Qt::Key_L:
                 teleporting = true;
@@ -74,6 +78,7 @@ void MainShip::keyUpdate(int key, bool pressed)
                 break;
             case Qt::Key_K:
                 thrusting = false;
+                period = 0;
                 break;
             case Qt::Key_J:
                 firing = false;

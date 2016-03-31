@@ -38,9 +38,6 @@ class Ship: public Object
 
         vector<double> bulletCooldowns;
 
-        //put in individual lines, not a line loop or strip
-        vector<vec2> shipFirePoints;
-
         vector<vec2> bulletFirePoints;
 };
 

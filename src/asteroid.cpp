@@ -4,14 +4,14 @@
 
 using std::make_shared;
 
-Asteroid::Asteroid(vec2 center, double radius, double vel):
+Asteroid::Asteroid(vec2 center, double rad, double vel):
 Object(center, vec2(0,0), 0)
 {
     //this method uses degrees instead of radians because it is easier to work with integers moving around a circle
     ConvexShape currentShape;
     currentShape.points.push_back(vec2(0,0));
 
-    radius = radius;
+    radius = rad;
     double ang = abs(rand() % 360) * PI / 180;
     velocity.x = vel * cos(ang);
     velocity.y = vel * sin(ang);

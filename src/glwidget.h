@@ -12,6 +12,7 @@
 #include "asteroid.h"
 #include "ship.h"
 #include <chrono>
+#include <vector>
 
 // glm by default uses degrees, but that functionality
 // is deprecated so GLM_FORCE_RADIANS turns off some 
@@ -20,6 +21,7 @@
 
 using glm::vec2;
 using glm::vec3;
+using std::vector;
 
 class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
     Q_OBJECT
@@ -62,15 +64,11 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
 
         GameEngine engine;
         GameState state;
-        int points;
 
         std::chrono::time_point<std::chrono::system_clock> first, last, current;
 
-        bool turningLeft;
-        bool turningRight;
-        bool thrusting;
-        bool firing;
-        bool teleporting;
+        vector<vec2> pointPoints;
+        vector<vec2> all;
 };
 
 #endif

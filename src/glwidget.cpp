@@ -33,11 +33,6 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent) {
     aTimer->start(5);
     first = chrono::system_clock::now();
     last = chrono::system_clock::now();
-    turningLeft = false;
-    turningRight = false;
-    thrusting = false;
-    firing = false;
-    teleporting = false;
 }
 
 GLWidget::~GLWidget() {
@@ -45,20 +40,26 @@ GLWidget::~GLWidget() {
 
 void GLWidget::keyPressEvent(QKeyEvent *event)
 {
-    for(unsigned int k = 0; k < state.objects.size(); k++)
+    if(state.pauseTime <= 0 && state.floatTime <= 0)
     {
-        state.objects.at(k)->keyUpdate(event->key(), true);
+        for(unsigned int k = 0; k < state.objects.size(); k++)
+        {
+            state.objects.at(k)->keyUpdate(event->key(), true);
+        }
+        update();
     }
-    update();
 }
 
 void GLWidget::keyReleaseEvent(QKeyEvent *event)
 {
-    for(unsigned int k = 0; k < state.objects.size(); k++)
+    if(state.pauseTime <= 0 && state.floatTime <= 0)
     {
-        state.objects.at(k)->keyUpdate(event->key(), false);
+        for(unsigned int k = 0; k < state.objects.size(); k++)
+        {
+            state.objects.at(k)->keyUpdate(event->key(), false);
+        }
+        update();
     }
-    update();
 }
 
 void GLWidget::initializeGL() {
@@ -124,9 +125,20 @@ void GLWidget::paintGL() {
 
     updatePositions();
     glUseProgram(program);
-    glBindVertexArray(vao);
-    glDrawArrays(GL_LINES, 0, points);
-    glDrawArrays(GL_POINTS, 0, points);
+    if(all.size() > 0)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * all.size(), all.data(), GL_DYNAMIC_DRAW);
+        glBindVertexArray(vao);
+        glDrawArrays(GL_LINES, 0, all.size());
+    }
+    if(pointPoints.size() > 0)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * pointPoints.size(), pointPoints.data(), GL_DYNAMIC_DRAW);
+        glBindVertexArray(vao);
+        glDrawArrays(GL_POINTS, 0, pointPoints.size());
+    }
 }
 
 void GLWidget::updatePositions()
@@ -136,37 +148,42 @@ void GLWidget::updatePositions()
     double elapsed = elapsed_seconds.count();
     last = current;
     engine.getNextState(state, elapsed);
-    points = 0;
-    vector<vec2> all;
+    all.clear();
+    pointPoints.clear();
     for(unsigned int k = 0; k < state.objects.size(); k++)
     {
         shared_ptr<Object> object = state.objects.at(k);
-        mat4 translate = glm::translate(mat4(1.0), vec3(object->position, 0));
-        mat4 rotate = glm::rotate(mat4(1.0), (float)(object->angle), vec3(0, 0, 1));
-        mat4 translationMatrix = translate * rotate;
-        for(unsigned int a = 0; a < object->points.size(); a++)
+        if(object->drawPoints)
         {
-            all.push_back(vec2(translationMatrix * vec4(object->points.at(a), 0, 1)));
-            points++;
+            pointPoints.push_back(object->position);
+        }
+        else
+        {
+            mat4 translate = glm::translate(mat4(1.0), vec3(object->position, 0));
+            mat4 rotate = glm::rotate(mat4(1.0), (float)(object->angle), vec3(0, 0, 1));
+            mat4 translationMatrix = translate * rotate;
+            for(unsigned int a = 0; a < object->points.size(); a++)
+            {
+                all.push_back(vec2(translationMatrix * vec4(object->points.at(a), 0, 1)));
+            }
+
+            if(object->period > .00001)
+            {
+                std::chrono::duration<double> theTime = current - first;
+                double time = theTime.count();
+                time = time - ((int)(time / object->period) * object->period);
+                if(time < (object->percent * object->period))
+                {
+                    for(unsigned int a = 0; a < object->tempPoints.size(); a++)
+                    {
+                        all.push_back(vec2(translationMatrix * vec4(object->tempPoints.at(a), 0, 1)));
+                    }
+                }
+            }
         }
     }
 
-    /*std::chrono::duration<double> elapsed_seconds = current - first;
-    if(state.ships.at(k)->thrusting && (int)(elapsed_seconds.count() * 100) % 16 < 8)
-    {
-        for(unsigned int a = 0; a < state.ships.at(k)->shipFirePoints.size(); a++)
-        {
-            mat4 translate = glm::translate(mat4(1.0), vec3(state.ships.at(k)->position, 0));
-            mat4 rotate = glm::rotate(mat4(1.0), (float)(state.ships.at(k)->angle), vec3(0, 0, 1));
-            mat4 translationMatrix = translate * rotate;
-            all.push_back(vec2(translationMatrix * vec4(state.ships.at(k)->shipFirePoints.at(a), 0, 1)));
-            points++;
-        }
-    }*/
-
     glUseProgram(program);
-    glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vec2) * all.size(), all.data(), GL_DYNAMIC_DRAW);
 }
 
 // Copied from LoadShaders.cpp in the the oglpg-8th-edition.zip
