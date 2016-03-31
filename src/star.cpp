@@ -4,10 +4,10 @@
 
 using std::vector;
 
-Star::Star(vec2 center, vec2 vel, int index, double w, double r):
+Star::Star(vec2 center, vec2 vel, int index, double weight, double r):
 Object(center, vel, index)
 {
-    weight = w;
+    mass = weight;
     radius = r;
     vector<vec2> allPoints;
     for(double k = 0; k < (2 * PI) - .0001; k += (PI / 6))

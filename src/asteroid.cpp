@@ -1,9 +1,10 @@
 #include "asteroid.h"
 #include "convex_shape.h"
+#include <iostream>
 
 using std::make_shared;
 
-GameEngine::Asteroid(vec2 center, double radius, double velocity):
+Asteroid::Asteroid(vec2 center, double radius, double vel):
 Object(center, vec2(0,0), 0)
 {
     //this method uses degrees instead of radians because it is easier to work with integers moving around a circle
@@ -12,8 +13,8 @@ Object(center, vec2(0,0), 0)
 
     radius = radius;
     double ang = abs(rand() % 360) * PI / 180;
-    velocity.x = velocity * cos(ang);
-    velocity.y = velocity * sin(ang);
+    velocity.x = vel * cos(ang);
+    velocity.y = vel * sin(ang);
 
     int last = -999;
     int sides = 7 + (abs(rand() % 5));
@@ -56,7 +57,7 @@ Object(center, vec2(0,0), 0)
 
         ang = (k + 1) * change;
         ang += rand() % (int)(change / 2);
-        ang = angle * PI / 180;
+        ang = ang * PI / 180;
 
     }
 

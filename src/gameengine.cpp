@@ -47,7 +47,7 @@ void GameEngine::createInitialState(GameState& state)
     state.asteroidSpeed = 50;
     state.baseAsteroidRadius = 30;
     state.gravityConstant = 1;
-    state.ships.push_back(make_shared<MainShip>(vec2(width / 2, height / 2)));
+    state.objects.push_back(make_shared<MainShip>(vec2(width / 2, height / 2), 1));
 
     /*state.stars.push_back(make_shared<Star>());
     state.stars.at(0)->position.x = width / 2;
@@ -128,9 +128,9 @@ void GameEngine::updateObjectLocations(GameState& state, double timePassed)
         //destroy
         if(object->timeToLive <= 0)
         {
-            vector<shared_ptr<Object>> newOnes = object->destroy(-1);
+            vector<shared_ptr<Object>> newOnes = object->destroy(state, -1);
             state.objects.insert(state.objects.end(), newOnes.begin(), newOnes.end());
-            objects.erase(state.objects.start() + k);
+            state.objects.erase(state.objects.begin() + k);
         }
         //apply gravity
         else if(object->mass > .00001)
@@ -154,7 +154,7 @@ void GameEngine::updateObjects(GameState& state, double timePassed)
 {
     for(unsigned int k = 0; k < state.objects.size(); k++)
     {
-        vector<shared_ptr<Object>> newOnes = object->updateFromControls();
+        vector<shared_ptr<Object>> newOnes = state.objects.at(k)->updateFromControls(state, timePassed);
         state.objects.insert(state.objects.end(), newOnes.begin(), newOnes.end());
     }
 }
@@ -163,26 +163,26 @@ void GameEngine::detectCollisions(GameState& state)
 {
     for(unsigned int k = 0; k < state.objects.size() - 1; k++)
     {
-        if(state.objects.at(k).collisionIndex != -1)
+        if(state.objects.at(k)->collisionIndex != -1)
         {
             for(unsigned int a = k + 1; a < state.objects.size(); a++)
             {
-                if(state.objects.at(k).collisionIndex != state.objects.at(a).collisionIndex && state.objects.at(a) != -1)
+                if(state.objects.at(k)->collisionIndex != state.objects.at(a)->collisionIndex && state.objects.at(a)->collisionIndex != -1)
                 {
                     int region = CollisionDetection::twoShapes(state.objects.at(k), state.objects.at(a));
                     if(region >= 0)
                     {
                         int region2 = CollisionDetection::twoShapes(state.objects.at(a), state.objects.at(k));
 
-                        vector<shared_ptr<Object>> newOnes = state.objects.at(k)->destroy(region);
+                        vector<shared_ptr<Object>> newOnes = state.objects.at(k)->destroy(state, region);
                         state.objects.insert(state.objects.end(), newOnes.begin(), newOnes.end());
-                        objects.erase(state.objects.start() + k);
+                        state.objects.erase(state.objects.begin() + k);
                         k--;
                         a--;
 
-                        vector<shared_ptr<Object>> newOnes2 = state.objects.at(a)->destroy(region2);
+                        vector<shared_ptr<Object>> newOnes2 = state.objects.at(a)->destroy(state, region2);
                         state.objects.insert(state.objects.end(), newOnes2.begin(), newOnes2.end());
-                        objects.erase(state.objects.start() + a);
+                        state.objects.erase(state.objects.begin() + a);
                         a--;
                     }
                 }
@@ -223,9 +223,9 @@ void GameEngine::createAsteroids(GameState& state, int number)
         while(!done)
         {
             done = true;
-            for(unsigned int a = 0; a < state.ships.size(); a++)
+            for(unsigned int a = 0; a < state.objects.size(); a++)
             {
-                if(distance(tempPoint, state.ships.at(a)->position) < 200)
+                if(distance(tempPoint, state.objects.at(a)->position) < 200)
                 {
                     done = false;
                     tempPoint.x = rand() % width;
@@ -235,7 +235,7 @@ void GameEngine::createAsteroids(GameState& state, int number)
             }
         }
 
-        stared_ptr<Object> asteroid(make_shared<Asteroid>(tempPoint, state.baseAsteroidRadius, state.asteroidSpeed));
+        shared_ptr<Object> asteroid(make_shared<Asteroid>(tempPoint, state.baseAsteroidRadius, state.asteroidSpeed));
         state.objects.push_back(asteroid);
     }
 }

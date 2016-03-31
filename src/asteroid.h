@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include "object.h"
+#include "gamestate.h"
 
 using glm::vec2;
 using std::vector;
@@ -12,7 +13,7 @@ using std::shared_ptr;
 class Asteroid: public Object
 {
     public:
-        Asteroid(vec2 center, double radius, double velocity);
+        Asteroid(vec2 center, double radius, double vel);
         vector<shared_ptr<Object>> destroy(const GameState& state, int region);
 
         double radius;

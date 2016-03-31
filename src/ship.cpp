@@ -26,7 +26,7 @@ Object(location, vec2(0,0), index)
     maxBullets = 4;
 }
 
-vector<shared_ptr<Object>> Ship::updateFromControls(GameState& state, double timePassed)
+vector<shared_ptr<Object>> Ship::updateFromControls(const GameState& state, double timePassed)
 {
     vector<shared_ptr<Object>> objects;
 
@@ -79,8 +79,8 @@ vector<shared_ptr<Object>> Ship::updateFromControls(GameState& state, double tim
             vec2 vel;
             vel.x = cos((angle + bulletAngle) - (PI / 2)) * bulletSpeed + velocity.x;
             vel.y = sin((angle + bulletAngle) - (PI / 2)) * bulletSpeed + velocity.y;
-            shared_ptr<Bullet> bullet(make_shared<Bullet>(point, vel, collisionIndex, bulletAge));
-            objects->push_back(bullet);
+            shared_ptr<Object> bullet(make_shared<Bullet>(point, vel, collisionIndex, bulletAge));
+            objects.push_back(bullet);
         }
         
         fireCooldown = fireRate;

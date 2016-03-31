@@ -1,5 +1,6 @@
 #include "main_ship.h"
 #include "convex_shape.h"
+#include "animation.h"
 #include <glm/glm.hpp>
 #include <QTextStream>
 
@@ -84,15 +85,15 @@ void MainShip::keyUpdate(int key, bool pressed)
     }
 }
 
-vector<shared_ptr<Object MainShip::destroy(const GameState& state, int region)
+vector<shared_ptr<Object>> MainShip::destroy(const GameState& state, int region)
 {
     vector<shared_ptr<Object>> toReturn;
 
-    toReturn.push_back(make_shared<Animation>(position, vec2(15,-4), vec2(0,-15),vec2(8,15), .75);
-    toReturn.push_back(make_shared<Animation>(position, vec2(-15,-4), vec2(0,-15),vec2(-8,15), .75);
-    toReturn.push_back(make_shared<Animation>(position, vec2(8,18), vec2(4,10),vec2(8,15), .75);
-    toReturn.push_back(make_shared<Animation>(position, vec2(-8,18), vec2(-4,10),vec2(-8,15), .75);
-    toReturn.push_back(make_shared<Animation>(position, vec2(0,20), vec2(4,10),vec2(-4,10), .75);
+    toReturn.push_back(make_shared<Animation>(position, vec2(15,-4), vec2(0,-15),vec2(8,15), .75));
+    toReturn.push_back(make_shared<Animation>(position, vec2(-15,-4), vec2(0,-15),vec2(-8,15), .75));
+    toReturn.push_back(make_shared<Animation>(position, vec2(8,18), vec2(4,10),vec2(8,15), .75));
+    toReturn.push_back(make_shared<Animation>(position, vec2(-8,18), vec2(-4,10),vec2(-8,15), .75));
+    toReturn.push_back(make_shared<Animation>(position, vec2(0,20), vec2(4,10),vec2(-4,10), .75));
     
     return toReturn;
 }

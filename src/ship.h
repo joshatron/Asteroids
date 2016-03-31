@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include "object.h"
+#include "gamestate.h"
 
 using glm::vec2;
 using std::vector;
