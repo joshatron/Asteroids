@@ -5,7 +5,8 @@
 using std::endl;
 using glm::distance;
 
-MainShip::MainShip(vec2 location) : Ship(location)
+MainShip::MainShip(vec2 location, int index):
+Ship(location, index)
 {
     points.push_back(vec2(0, -15));
     points.push_back(vec2(8, 15));
@@ -79,4 +80,17 @@ void MainShip::keyUpdate(int key, bool pressed)
                 break;
         }
     }
+}
+
+vector<shared_ptr<Object MainShip::destroy(const GameState& state, int region)
+{
+    vector<shared_ptr<Object>> toReturn;
+
+    toReturn.push_back(make_shared<Animation>(position, vec2(15,-4), vec2(0,-15),vec2(8,15), .75);
+    toReturn.push_back(make_shared<Animation>(position, vec2(-15,-4), vec2(0,-15),vec2(-8,15), .75);
+    toReturn.push_back(make_shared<Animation>(position, vec2(8,18), vec2(4,10),vec2(8,15), .75);
+    toReturn.push_back(make_shared<Animation>(position, vec2(-8,18), vec2(-4,10),vec2(-8,15), .75);
+    toReturn.push_back(make_shared<Animation>(position, vec2(0,20), vec2(4,10),vec2(-4,10), .75);
+    
+    return toReturn;
 }

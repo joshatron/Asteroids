@@ -5,6 +5,6 @@
 class Bullet: public Object
 {
     public:
-        double age;
+        Bullet(vec2 center, vec2 vel, int index, double age);
 };
 #endif

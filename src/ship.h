@@ -10,7 +10,9 @@ using std::vector;
 class Ship: public Object
 {
     public:
-        Ship(vec2 location);
+        Ship(vec2 location, int index);
+        vector<shared_ptr<Object>> updateFromControls(const GameState& state, double timePassed);
+        void updateTimers(double timePassed);
 
         double fireCooldown;
         double teleportCooldown;
@@ -38,4 +40,5 @@ class Ship: public Object
 
         vector<vec2> bulletFirePoints;
 };
+
 #endif

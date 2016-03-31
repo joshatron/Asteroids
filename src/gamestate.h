@@ -15,14 +15,15 @@ using std::shared_ptr;
 class GameState
 {
     public:
-        vector<shared_ptr<Ship>> ships;
-        vector<shared_ptr<Bullet>> bullets;
-        vector<shared_ptr<Asteroid>> asteroids;
-        vector<shared_ptr<Star>> stars;
-        vector<shared_ptr<Animation>> animations;
+        vector<shared_ptr<Object>> objects;
         int nextNumAsteroids;
         double pauseTime;
         double floatTime;
+        int width;
+        int height;
+        double asteroidSpeed;
+        double baseAsteroidRadius;
+        double gravityConstant;
         shared_ptr<Stats> stats;
 };
 #endif

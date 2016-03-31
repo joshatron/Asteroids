@@ -5,7 +5,8 @@
 class Star: public Object
 {
     public:
+        Star(vec2 center, vec2 vel, int index, double weight, double r);
+
         double radius;
-        double gravity;
 };
 #endif
