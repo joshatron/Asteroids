@@ -1,9 +1,11 @@
 #include "main_ship.h"
+#include "convex_shape.h"
 #include <glm/glm.hpp>
 #include <QTextStream>
 
 using std::endl;
 using glm::distance;
+using std::make_shared;
 
 MainShip::MainShip(vec2 location, int index):
 Ship(location, index)

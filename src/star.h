@@ -1,6 +1,9 @@
 #ifndef STAR_H
 #define STAR_H
+#include <glm/glm.hpp>
 #include "object.h"
+
+using glm::vec2;
 
 class Star: public Object
 {

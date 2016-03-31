@@ -1,6 +1,8 @@
 #include "ship.h"
 #include "bullet.h"
 
+using std::make_shared;
+
 Ship::Ship(vec2 location, int index):
 Object(location, vec2(0,0), index)
 {

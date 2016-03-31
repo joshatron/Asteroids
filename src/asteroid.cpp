@@ -1,4 +1,7 @@
 #include "asteroid.h"
+#include "convex_shape.h"
+
+using std::make_shared;
 
 GameEngine::Asteroid(vec2 center, double radius, double velocity):
 Object(center, vec2(0,0), 0)
@@ -77,16 +80,16 @@ vector<shared_ptr<Object>> Asteroid::destroy(const GameState& state, int region)
 
     if(radius + .1 > state.baseAsteroidRadius)
     {
-        toReturn.push_back(createAsteroid(state, position, state.baseAsteroidRadius / 2, state.asteroidSpeed * 2));
-        toReturn.push_back(createAsteroid(state, position, state.baseAsteroidRadius / 2, state.asteroidSpeed * 2));
+        toReturn.push_back(make_shared<Asteroid>(position, state.baseAsteroidRadius / 2, state.asteroidSpeed * 2));
+        toReturn.push_back(make_shared<Asteroid>(position, state.baseAsteroidRadius / 2, state.asteroidSpeed * 2));
         //addScore(state, 25);
         //state.stats->largeAsteroidsDestroyed++;
     }
     //if it was a middle one 
-    else if(asteroid->radius + .1 > state.baseAsteroidRadius / 2)
+    else if(radius + .1 > state.baseAsteroidRadius / 2)
     {
-        toReturn.push_back(createAsteroid(state, position, state.baseAsteroidRadius / 3, state.asteroidSpeed * 3));
-        toReturn.push_back(createAsteroid(state, position, state.baseAsteroidRadius / 3, state.asteroidSpeed * 3));
+        toReturn.push_back(make_shared<Asteroid>(position, state.baseAsteroidRadius / 3, state.asteroidSpeed * 3));
+        toReturn.push_back(make_shared<Asteroid>(position, state.baseAsteroidRadius / 3, state.asteroidSpeed * 3));
         //addScore(state, 50);
         //state.stats->mediumAsteroidsDestroyed++;
     }

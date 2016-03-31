@@ -1,11 +1,13 @@
 #ifndef SHIP_H
 #define SHIP_H
 #include <glm/glm.hpp>
+#include <memory>
 #include <vector>
 #include "object.h"
 
 using glm::vec2;
 using std::vector;
+using std::shared_ptr;
 
 class Ship: public Object
 {

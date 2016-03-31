@@ -24,5 +24,8 @@ class GameEngine
         double basePauseTime;
         double baseDeathTime;
         int baseAsteroids;
+        int currentIndex;
+        int width;
+        int height;
 };
 #endif

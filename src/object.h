@@ -1,6 +1,7 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 #include <vector>
+#include <memory>
 #include "convex_shape.h"
 
 #ifndef PI
@@ -9,6 +10,7 @@
 
 using glm::distance;
 using std::vector;
+using std::shared_ptr;
 
 class GameState;
 class Object

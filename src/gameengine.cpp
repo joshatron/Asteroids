@@ -31,11 +31,9 @@ using glm::rotate;
 GameEngine::GameEngine()
 {
     //these are best values found
-    asteroidSpeed = 50;
-    baseAsteroidRadius = 30;
+    currentIndex = 1;
     basePauseTime = 3;
     baseDeathTime = 1;
-    gravityConstant = 1;
     baseAsteroids = 4;
     width = 1600;
     height = 900;
@@ -44,6 +42,11 @@ GameEngine::GameEngine()
 
 void GameEngine::createInitialState(GameState& state)
 {
+    state.width = width;
+    state.height = height;
+    state.asteroidSpeed = 50;
+    state.baseAsteroidRadius = 30;
+    state.gravityConstant = 1;
     state.ships.push_back(make_shared<MainShip>(vec2(width / 2, height / 2)));
 
     /*state.stars.push_back(make_shared<Star>());
@@ -90,7 +93,7 @@ void GameEngine::updateObjectLocations(GameState& state, double timePassed)
     state.floatTime -= timePassed;
 
     //reset (for after a death)
-    if(state.stats->timeToReset <= 0 && state.stats->mainShipIndex == -1 && state.stats->lives > 0)
+    /*if(state.stats->timeToReset <= 0 && state.stats->mainShipIndex == -1 && state.stats->lives > 0)
     {
         vec2 cent = vec2(width / 2, height / 2);
         bool near = false;
@@ -108,14 +111,14 @@ void GameEngine::updateObjectLocations(GameState& state, double timePassed)
             state.stats->mainShipIndex = state.ships.size();
             state.ships.push_back(make_shared<MainShip>(cent));
         }
-    }
+    }*/
 
     //we ran out of asteroids... we need more
-    if(state.asteroids.size() == 0)
+    /*if(state.asteroids.size() == 0)
     {
         state.nextNumAsteroids += 2;
         createAsteroids(state, state.nextNumAsteroids);
-    }
+    }*/
 
     for(unsigned int k = 0; k < state.objects.size(); k++)
     {
@@ -137,7 +140,7 @@ void GameEngine::updateObjectLocations(GameState& state, double timePassed)
                 if(a != k)
                 {
                     shared_ptr<Object> object2 = state.objects.at(a);
-                    double acceleration = gravityConstant * (object->mass / pow(distance(object->position, object2->position), 2));
+                    double acceleration = state.gravityConstant * (object->mass / pow(distance(object->position, object2->position), 2));
                     double angle = atan2(object->position.y - object2->position.y, object->position.x - object2->position.x);
                     object2->velocity.x += cos(angle) * acceleration;
                     object2->velocity.y += sin(angle) * acceleration;
@@ -164,7 +167,7 @@ void GameEngine::detectCollisions(GameState& state)
         {
             for(unsigned int a = k + 1; a < state.objects.size(); a++)
             {
-                if(state.objects.at(k).collisionIndex != state.objects.at(a).collisionIndex)
+                if(state.objects.at(k).collisionIndex != state.objects.at(a).collisionIndex && state.objects.at(a) != -1)
                 {
                     int region = CollisionDetection::twoShapes(state.objects.at(k), state.objects.at(a));
                     if(region >= 0)

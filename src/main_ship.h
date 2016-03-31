@@ -1,9 +1,13 @@
 #ifndef MAIN_SHIP_H
 #define MAIN_SHIP_H
 #include <glm/glm.hpp>
+#include <memory>
+#include <vector>
 #include "ship.h"
 
 using glm::vec2;
+using std::vector;
+using std::shared_ptr;
 
 class MainShip: public Ship
 {

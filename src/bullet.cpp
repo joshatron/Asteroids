@@ -1,4 +1,5 @@
 #include "bullet.h"
+#include "convex_shape.h"
 
 Bullet::Bullet(vec2 center, vec2 vel, int index, double age):
 Object(center, vel, index)

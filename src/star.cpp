@@ -1,4 +1,8 @@
 #include "star.h"
+#include "convex_shape.h"
+#include <vector>
+
+using std::vector;
 
 Star::Star(vec2 center, vec2 vel, int index, double w, double r):
 Object(center, vel, index)

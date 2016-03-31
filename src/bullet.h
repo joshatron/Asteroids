@@ -1,6 +1,9 @@
 #ifndef BULLET_H
 #define BULLET_H
+#include <glm/glm.hpp>
 #include "object.h"
+
+using glm::vec2;
 
 class Bullet: public Object
 {

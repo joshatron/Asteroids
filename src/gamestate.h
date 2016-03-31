@@ -2,11 +2,7 @@
 #define GAMESTATE_H
 #include <vector>
 #include <memory>
-#include "bullet.h"
-#include "asteroid.h"
-#include "star.h"
-#include "ship.h"
-#include "animation.h"
+#include "object.h"
 #include "stats.h"
 
 using std::vector;
