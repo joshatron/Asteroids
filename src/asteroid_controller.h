@@ -4,9 +4,10 @@
 #include "gamestate.h"
 
 //count indexes
-//0- main ship
-//1- asteroids
-//2- other
+//0- dont care
+//1- main ship
+//2- asteroids
+//3- hexaship
 class AsteroidsController: public Controller
 {
     public:
@@ -16,11 +17,6 @@ class AsteroidsController: public Controller
         void updateTimers(GameState& state, double timePassed);
         int lives;
         int score;
-        int largeAsteroidsDestroyed;
-        int mediumAsteroidsDestroyed;
-        int smallAsteroidsDestroyed;
-        int largeShipsDestroyed;
-        int smallShipsDestroyed;
 
         double basePauseTime;
         double baseDeathTime;

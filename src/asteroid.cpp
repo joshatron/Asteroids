@@ -5,7 +5,7 @@
 using std::make_shared;
 
 Asteroid::Asteroid(vec2 center, double rad, double vel):
-Object(center, vec2(0,0), 0, 1)
+Object(center, vec2(0,0), 0, 2)
 {
     //this method uses degrees instead of radians because it is easier to work with integers moving around a circle
     ConvexShape currentShape;

@@ -9,7 +9,7 @@ using glm::distance;
 using std::make_shared;
 
 MainShip::MainShip(vec2 location, int index):
-Ship(location, index, 0)
+Ship(location, index, 1)
 {
     points.push_back(vec2(0, -15));
     points.push_back(vec2(8, 15));

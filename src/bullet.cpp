@@ -6,7 +6,7 @@ using std::cout;
 using std::endl;
 
 Bullet::Bullet(vec2 center, vec2 vel, int index, double age):
-Object(center, vel, index, 2)
+Object(center, vel, index, 0)
 {
     drawPoints = true;
     timeToLive = age;

@@ -1,6 +1,8 @@
 #include "asteroid_controller.h"
 #include "main_ship.h"
 #include "asteroid.h"
+#include "hexa_ship.h"
+#include "star.h"
 #include <stdlib.h>
 #include <iostream>
 
@@ -22,17 +24,13 @@ AsteroidsController::AsteroidsController()
     counts.push_back(0);
     counts.push_back(0);
     counts.push_back(0);
+    counts.push_back(0);
 }
 
 void AsteroidsController::initialize(GameState& state)
 {
     lives = 3;
     score = 0;
-    largeAsteroidsDestroyed = 0;
-    mediumAsteroidsDestroyed = 0;
-    smallAsteroidsDestroyed = 0;
-    largeShipsDestroyed = 0;
-    smallShipsDestroyed = 0;
     
     timeToReset = -1;
     floatTime = -1;
@@ -44,12 +42,17 @@ void AsteroidsController::initialize(GameState& state)
     state.width = 1600;
     state.height = 900;
 
-    state.objects.push_back(make_shared<MainShip>(vec2(width / 2, height / 2), 1));
-    counts.at(0) = 1;
+    state.objects.push_back(make_shared<MainShip>(vec2(width / 6, height / 6), 1));
+    counts.at(1) = 1;
+
+    /*state.objects.push_back(make_shared<HexaShip>(vec2(width / 6, height / 6), 3));
+    counts.at(3) = 1;*/
+
+    state.objects.push_back(make_shared<Star>(vec2(width / 2., height / 2.), vec2(0,0), 100, 100000., 10.));
 
     state.nextNumAsteroids = baseAsteroids;
     createAsteroids(state, state.nextNumAsteroids);
-    counts.at(1) = state.nextNumAsteroids;
+    counts.at(2) = state.nextNumAsteroids;
 }
 
 void AsteroidsController::updateCount(GameState& state, int index, bool add)
@@ -61,24 +64,24 @@ void AsteroidsController::updateCount(GameState& state, int index, bool add)
     else
     {
         counts.at(index) -= 1;
-        if(index == 1)
+        if(index == 2)
         {
             updateScore(100);
         }
     }
 
 
-    if(index == 0 && counts.at(0) == 0)
+    if(index == 1 && counts.at(1) == 0)
     {
         timeToReset = baseDeathTime;
         lives--;
     }
 
-    if(index == 1 && counts.at(1) == 0)
+    if(index == 2 && counts.at(2) == 0)
     {
         state.nextNumAsteroids += 2;
         createAsteroids(state, state.nextNumAsteroids);
-        counts.at(1) = state.nextNumAsteroids;
+        counts.at(2) = state.nextNumAsteroids;
     }
 }
 
@@ -88,9 +91,9 @@ void AsteroidsController::updateTimers(GameState& state, double timePassed)
     floatTime -= timePassed;
     pauseTime -= timePassed;
 
-    if(counts.at(0) == 0 && timeToReset <= 0 && lives > 0)
+    if(counts.at(1) == 0 && timeToReset <= 0 && lives > 0)
     {
-        vec2 cent = vec2(width / 2, height / 2);
+        vec2 cent = vec2(width / 6, height / 6);
         bool near = false;
         for(unsigned int k = 0; k < state.objects.size(); k++)
         {
@@ -103,9 +106,8 @@ void AsteroidsController::updateTimers(GameState& state, double timePassed)
         
         if(!near)
         {
-            state.objects.push_back(make_shared<MainShip>(vec2(width / 2, height / 2), 1));
-            counts.at(0) = 1;
-            cout << "spawned" << endl;
+            state.objects.push_back(make_shared<MainShip>(vec2(width / 6, height / 6), 1));
+            counts.at(1) = 1;
         }
     }
 }

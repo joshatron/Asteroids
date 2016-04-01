@@ -4,7 +4,7 @@
 using std::make_shared;
 
 Star::Star(vec2 center, vec2 vel, int index, double weight, double r):
-Object(center, vel, index, 2)
+Object(center, vel, index, 0)
 {
     mass = weight;
     radius = r;
