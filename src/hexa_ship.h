@@ -14,5 +14,7 @@ class HexaShip: public Ship
     public:
         HexaShip(vec2 location, int index);
         vector<shared_ptr<Object>> destroy(const GameState& state, int region);
+    private:
+        shared_ptr<Object> target;
 };
 #endif
