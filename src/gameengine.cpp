@@ -1,6 +1,5 @@
 #include "gameengine.h"
 #include <stdlib.h>
-#include <memory>
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <cmath>
@@ -13,6 +12,7 @@
 #include "star.h"
 #include "main_ship.h"
 #include "animation.h"
+#include "asteroid_controller.h"
 
 #ifndef PI
     #define PI 3.14159265
@@ -21,7 +21,6 @@
 using std::cout;
 using std::endl;
 using std::make_shared;
-using std::shared_ptr;
 using glm::distance;
 using glm::vec3;
 using glm::vec4;
@@ -30,13 +29,13 @@ using glm::rotate;
 
 GameEngine::GameEngine()
 {
-    //these are best values found
     srand(time(NULL));
+    controller = make_shared<AsteroidsController>();
 }
 
 void GameEngine::createInitialState(GameState& state)
 {
-    controller.initialize(state);
+    controller->initialize(state);
 }
 
 void GameEngine::getNextState(GameState& state, double timePassed)
@@ -48,9 +47,11 @@ void GameEngine::getNextState(GameState& state, double timePassed)
 
 void GameEngine::updateObjectLocations(GameState& state, double timePassed)
 {
-    controller.updateTimers(state, timePassed);
+    controller->updateTimers(state, timePassed);
+    state.pauseTime = controller->pauseTime;
+    state.floatTime = controller->floatTime;
     //if we should be paused, exit
-    if(controller.pauseTime > 0)
+    if(controller->pauseTime > 0)
     {
         return;
     }
@@ -67,11 +68,11 @@ void GameEngine::updateObjectLocations(GameState& state, double timePassed)
 
             for(unsigned int a = 0; a < newOnes.size(); a++)
             {
-                controller.updateCount(state, newOnes.at(a)->typeIndex, true);
+                controller->updateCount(state, newOnes.at(a)->typeIndex, true);
                 state.objects.push_back(newOnes.at(a));
             }
 
-            controller.updateCount(state, state.objects.at(k)->typeIndex, false);
+            controller->updateCount(state, state.objects.at(k)->typeIndex, false);
             state.objects.erase(state.objects.begin() + k);
         }
         //apply gravity
@@ -94,7 +95,7 @@ void GameEngine::updateObjectLocations(GameState& state, double timePassed)
 
 void GameEngine::updateObjects(GameState& state, double timePassed)
 {
-    if(controller.pauseTime <= 0 && controller.floatTime <= 0)
+    if(controller->pauseTime <= 0 && controller->floatTime <= 0)
     {
         for(unsigned int k = 0; k < state.objects.size(); k++)
         {
@@ -121,13 +122,13 @@ void GameEngine::detectCollisions(GameState& state)
 
                         vector<shared_ptr<Object>> newOnes = state.objects.at(k)->destroy(state, region);
 
-                        for(unsigned int a = 0; a < newOnes.size(); a++)
+                        for(unsigned int t = 0; t < newOnes.size(); t++)
                         {
-                            controller.updateCount(state, newOnes.at(a)->typeIndex, true);
-                            state.objects.push_back(newOnes.at(a));
+                            controller->updateCount(state, newOnes.at(t)->typeIndex, true);
+                            state.objects.push_back(newOnes.at(t));
                         }
 
-                        controller.updateCount(state, state.objects.at(k)->typeIndex, false);
+                        controller->updateCount(state, state.objects.at(k)->typeIndex, false);
                         state.objects.erase(state.objects.begin() + k);
 
                         k--;
@@ -135,14 +136,14 @@ void GameEngine::detectCollisions(GameState& state)
 
                         vector<shared_ptr<Object>> newOnes2 = state.objects.at(a)->destroy(state, region2);
 
-                        for(unsigned int a = 0; a < newOnes2.size(); a++)
+                        for(unsigned int t = 0; t < newOnes2.size(); t++)
                         {
-                            controller.updateCount(state, newOnes2.at(a)->typeIndex, true);
-                            state.objects.push_back(newOnes2.at(a));
+                            controller->updateCount(state, newOnes2.at(t)->typeIndex, true);
+                            state.objects.push_back(newOnes2.at(t));
                         }
 
-                        controller.updateCount(state, state.objects.at(k)->typeIndex, false);
-                        state.objects.erase(state.objects.begin() + k);
+                        controller->updateCount(state, state.objects.at(a)->typeIndex, false);
+                        state.objects.erase(state.objects.begin() + a);
 
                         break;
                     }
@@ -155,32 +156,22 @@ void GameEngine::detectCollisions(GameState& state)
 void GameEngine::updateLocation(vec2& original, vec2& velocity, double time)
 {
     original.x += (velocity.x * time);
-    if(original.x > width)
+    if(original.x > controller->width)
     {
-        original.x = original.x - width;
+        original.x = original.x - controller->width;
     }
     else if(original.x < 0)
     {
-        original.x = original.x + width;
+        original.x = original.x + controller->width;
     }
 
     original.y += (velocity.y * time);
-    if(original.y > height)
+    if(original.y > controller->height)
     {
-        original.y = original.y - height;
+        original.y = original.y - controller->height;
     }
     else if(original.y < 0)
     {
-        original.y = original.y + height;
+        original.y = original.y + controller->height;
     }
-}
-
-void GameEngine::addScore(GameState& state, int points)
-{
-    int score = state.stats->score;
-    if(score % 10000 > (score + points) % 10000)
-    {
-        state.stats->lives++;
-    }
-    state.stats->score += points;
 }

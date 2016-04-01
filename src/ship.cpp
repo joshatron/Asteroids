@@ -3,8 +3,8 @@
 
 using std::make_shared;
 
-Ship::Ship(vec2 location, int index):
-Object(location, vec2(0,0), index)
+Ship::Ship(vec2 location, int index, int type):
+Object(location, vec2(0,0), index, type)
 {
     fireCooldown = 0;
     teleportCooldown = 0;

@@ -1,12 +1,12 @@
 #ifndef ASTR_CTRLR_H
 #define ASTR_CTRLR_H
 #include "controller.h"
+#include "gamestate.h"
 
 //count indexes
 //0- main ship
 //1- asteroids
-//2- bullets
-//3- stars
+//2- other
 class AsteroidsController: public Controller
 {
     public:
@@ -26,11 +26,10 @@ class AsteroidsController: public Controller
         double baseDeathTime;
         int baseAsteroids;
         int currentIndex;
-        int width;
-        int height;
 
     private:
         void createAsteroids(GameState& state, int number);
+        void updateScore(int points);
 
         double timeToReset;
 };

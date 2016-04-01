@@ -16,8 +16,8 @@ class GameState;
 class Object
 {
     public:
-        Object(vec2 center, vec2 vel, int index): mass(0), position(center), velocity(vel), angle(0), timeToLive(9999),
-                                                  period(0), percent(0), collisionIndex(index), drawPoints(false) {};
+        Object(vec2 center, vec2 vel, int index, int type): mass(0), position(center), velocity(vel), angle(0), timeToLive(9999),
+                                                  period(0), percent(0), collisionIndex(index), typeIndex(type), drawPoints(false) {};
         //methods that the objects will use to do more than float around
         //does not change state, just control flags
         virtual void update(const GameState& state) {};

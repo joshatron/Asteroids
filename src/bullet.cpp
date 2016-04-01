@@ -1,8 +1,12 @@
 #include "bullet.h"
 #include "convex_shape.h"
+#include <iostream>
+
+using std::cout;
+using std::endl;
 
 Bullet::Bullet(vec2 center, vec2 vel, int index, double age):
-Object(center, vel, index)
+Object(center, vel, index, 2)
 {
     drawPoints = true;
     timeToLive = age;

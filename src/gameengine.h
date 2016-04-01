@@ -3,9 +3,12 @@
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
+#include <memory>
 #include "gamestate.h"
+#include "controller.h"
 
 using glm::vec2;
+using std::shared_ptr;
 
 class GameEngine
 {
@@ -19,6 +22,6 @@ class GameEngine
         void detectCollisions(GameState& state);
         void updateLocation(vec2& original, vec2& velocity, double time);
 
-        Controller controller;
+        shared_ptr<Controller> controller;
 };
 #endif

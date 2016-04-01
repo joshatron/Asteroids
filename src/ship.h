@@ -13,7 +13,7 @@ using std::shared_ptr;
 class Ship: public Object
 {
     public:
-        Ship(vec2 location, int index);
+        Ship(vec2 location, int index, int type);
         vector<shared_ptr<Object>> updateFromControls(const GameState& state, double timePassed);
         void updateTimers(double timePassed);
 

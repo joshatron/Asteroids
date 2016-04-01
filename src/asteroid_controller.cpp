@@ -1,5 +1,12 @@
 #include "asteroid_controller.h"
+#include "main_ship.h"
+#include "asteroid.h"
 #include <stdlib.h>
+#include <iostream>
+
+using std::make_shared;
+using std::cout;
+using std::endl;
 
 AsteroidsController::AsteroidsController()
 {
@@ -12,7 +19,6 @@ AsteroidsController::AsteroidsController()
     width = 1600;
     height = 900;
 
-    counts.push_back(0);
     counts.push_back(0);
     counts.push_back(0);
     counts.push_back(0);
@@ -43,7 +49,7 @@ void AsteroidsController::initialize(GameState& state)
 
     state.nextNumAsteroids = baseAsteroids;
     createAsteroids(state, state.nextNumAsteroids);
-    count.at(1) += state.nextNumAsteroids;
+    counts.at(1) = state.nextNumAsteroids;
 }
 
 void AsteroidsController::updateCount(GameState& state, int index, bool add)
@@ -55,7 +61,12 @@ void AsteroidsController::updateCount(GameState& state, int index, bool add)
     else
     {
         counts.at(index) -= 1;
+        if(index == 1)
+        {
+            updateScore(100);
+        }
     }
+
 
     if(index == 0 && counts.at(0) == 0)
     {
@@ -67,6 +78,7 @@ void AsteroidsController::updateCount(GameState& state, int index, bool add)
     {
         state.nextNumAsteroids += 2;
         createAsteroids(state, state.nextNumAsteroids);
+        counts.at(1) = state.nextNumAsteroids;
     }
 }
 
@@ -80,9 +92,9 @@ void AsteroidsController::updateTimers(GameState& state, double timePassed)
     {
         vec2 cent = vec2(width / 2, height / 2);
         bool near = false;
-        for(unsigned int k = 0; k < state.asteroids.size(); k++)
+        for(unsigned int k = 0; k < state.objects.size(); k++)
         {
-            if(distance(state.asteroids.at(k)->position, cent) < 150)
+            if(distance(state.objects.at(k)->position, cent) < 150)
             {
                 near = true;
                 break;
@@ -93,6 +105,7 @@ void AsteroidsController::updateTimers(GameState& state, double timePassed)
         {
             state.objects.push_back(make_shared<MainShip>(vec2(width / 2, height / 2), 1));
             counts.at(0) = 1;
+            cout << "spawned" << endl;
         }
     }
 }

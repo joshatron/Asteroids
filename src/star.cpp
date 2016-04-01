@@ -1,11 +1,10 @@
 #include "star.h"
 #include "convex_shape.h"
-#include <vector>
 
-using std::vector;
+using std::make_shared;
 
 Star::Star(vec2 center, vec2 vel, int index, double weight, double r):
-Object(center, vel, index)
+Object(center, vel, index, 2)
 {
     mass = weight;
     radius = r;
@@ -24,4 +23,11 @@ Object(center, vel, index)
     ConvexShape shape;
     shape.points = allPoints;
     collisionShapes.push_back(shape);
+}
+
+vector<shared_ptr<Object>> Star::destroy(const GameState& state, int region)
+{
+    vector<shared_ptr<Object>> toReturn;
+    toReturn.push_back(make_shared<Star>(position, velocity, collisionIndex, mass, radius));
+    return toReturn;
 }
